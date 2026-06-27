@@ -1,0 +1,14 @@
+# Configuration de déploiement pour Render (https://render.com).
+# Render lit ce fichier automatiquement (« Blueprint ») pour créer le service.
+services:
+  - type: web
+    name: plongee-n2-revision
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true        # Render génère une clé de session aléatoire
+      - key: PYTHON_VERSION
+        value: "3.11.9"

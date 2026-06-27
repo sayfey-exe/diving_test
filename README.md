@@ -112,12 +112,66 @@ $env:PORT=8080; python app.py
   `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, puis relancez
   la commande d'activation.
 
+## Déploiement en ligne (gratuit)
+
+L'application est prête pour la production : elle se lance avec le serveur
+**gunicorn** via le point d'entrée `app:app` (voir le `Procfile`).
+
+### Option A — Render (recommandé, déploiement depuis GitHub)
+
+[Render](https://render.com) propose un hébergement gratuit pour les services
+web et redéploie automatiquement à chaque `git push`.
+
+1. Pousser le projet sur un dépôt **GitHub** (public ou privé).
+2. Créer un compte sur [render.com](https://render.com) et le connecter à GitHub.
+3. Cliquer sur **New → Blueprint**, puis sélectionner le dépôt. Render lit le
+   fichier `render.yaml` fourni et configure tout automatiquement
+   (build, démarrage `gunicorn app:app`, clé `SECRET_KEY` générée).
+   - *Sans Blueprint* : **New → Web Service**, puis renseigner
+     **Build Command** = `pip install -r requirements.txt` et
+     **Start Command** = `gunicorn app:app`.
+4. Valider : l'app est en ligne sous une URL en `…onrender.com`.
+
+> ⓘ Sur l'offre gratuite, le service se met en veille après ~15 min d'inactivité ;
+> la première visite suivante prend quelques dizaines de secondes à « réveiller ».
+
+### Option B — PythonAnywhere (sans carte bancaire)
+
+[PythonAnywhere](https://www.pythonanywhere.com) a une offre gratuite adaptée à
+Flask, sans carte bancaire.
+
+1. Créer un compte gratuit (« Beginner »).
+2. Onglet **Files** : uploader le projet (ou le cloner via une console Bash :
+   `git clone <url-du-depot>`).
+3. Onglet **Web → Add a new web app → Manual configuration → Python 3.x**.
+4. Dans **Virtualenv**, créer/installer les dépendances :
+   `pip install -r requirements.txt`.
+5. Éditer le fichier **WSGI** proposé pour qu'il importe l'app :
+
+   ```python
+   import sys
+   path = "/home/<votre_user>/diving_test"
+   if path not in sys.path:
+       sys.path.insert(0, path)
+   from app import app as application   # PythonAnywhere attend « application »
+   ```
+
+6. Cliquer sur **Reload**. L'app est en ligne sous `…pythonanywhere.com`.
+
+### Autres plateformes compatibles
+
+Le `Procfile` (`web: gunicorn app:app`) rend l'app déployable telle quelle sur
+**Railway**, **Koyeb**, **Fly.io**, etc. Pensez à définir la variable
+d'environnement `SECRET_KEY` sur ces plateformes.
+
 ## Structure du projet
 
 ```
 diving_test/
 ├── app.py                 # application Flask (routes)
-├── requirements.txt
+├── requirements.txt       # dépendances (Flask, gunicorn)
+├── Procfile               # commande de démarrage en production (gunicorn)
+├── render.yaml            # configuration de déploiement Render
 ├── data/
 │   ├── content.py         # les 15 fiches de cours + astuces
 │   └── questions.py       # banque de questions des tests
