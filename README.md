@@ -23,24 +23,94 @@ Pression · Archimède · Boyle-Mariotte · Calcul d'autonomie · Barotraumatism
 Henry · Accidents de décompression · Dalton · Toxicité des gaz · Noyade ·
 Tables MN90 (2 parties) · Réglementation · Comportement & sécurité · Matériel.
 
-## Installation et lancement
+## Prérequis
+
+- **Python 3.9 ou supérieur** (vérifier avec `python3 --version`).
+- **pip** (installé avec Python).
+- Un navigateur web récent.
+
+Aucune base de données ni service externe n'est nécessaire.
+
+## Installation
+
+### 1. Récupérer le projet
 
 ```bash
-# 1. (recommandé) créer un environnement virtuel
+git clone <url-du-depot>
+cd diving_test
+```
+
+> Si vous avez déjà les fichiers en local, placez-vous simplement dans le
+> dossier `diving_test`.
+
+### 2. Créer un environnement virtuel (recommandé)
+
+Cela isole les dépendances du projet du reste de votre système.
+
+**Linux / macOS :**
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
+```
 
-# 2. installer les dépendances
+**Windows (PowerShell) :**
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+Une fois activé, votre invite de commande affiche `(.venv)` au début.
+
+### 3. Installer les dépendances
+
+```bash
 pip install -r requirements.txt
+```
 
-# 3. lancer l'application
+## Lancement
+
+```bash
 python app.py
 ```
 
 Puis ouvrir **http://localhost:5000** dans un navigateur.
 
-> Variable d'environnement optionnelle : `PORT` (port d'écoute, défaut 5000) et
-> `SECRET_KEY` (clé de session Flask).
+Pour **arrêter** l'application : `Ctrl + C` dans le terminal.
+
+Pour **quitter** l'environnement virtuel : `deactivate`.
+
+### Options (variables d'environnement)
+
+| Variable     | Rôle                                   | Défaut |
+|--------------|----------------------------------------|--------|
+| `PORT`       | Port d'écoute du serveur               | `5000` |
+| `SECRET_KEY` | Clé de session Flask (à définir en prod)| valeur de dev |
+
+Exemple pour changer le port :
+
+```bash
+# Linux / macOS
+PORT=8080 python app.py
+
+# Windows (PowerShell)
+$env:PORT=8080; python app.py
+```
+
+## Résolution de problèmes
+
+- **`python` introuvable** : essayez `python3` à la place (ou installez Python
+  depuis [python.org](https://www.python.org/downloads/)).
+- **Le port 5000 est déjà utilisé** : lancez avec un autre port, par ex.
+  `PORT=8080 python app.py`.
+- **`ModuleNotFoundError: No module named 'flask'`** : l'environnement virtuel
+  n'est pas activé ou les dépendances ne sont pas installées — refaites les
+  étapes 2 et 3.
+- **Sous Windows, l'activation est bloquée** (`Activate.ps1`) : autorisez les
+  scripts dans la session avec
+  `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, puis relancez
+  la commande d'activation.
 
 ## Structure du projet
 
