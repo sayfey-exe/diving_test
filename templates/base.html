@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Plongée N2 — Révision{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-logo">🤿</span>
+        <span class="brand-text">Plongée <strong>N2</strong> · Révision</span>
+      </a>
+      <nav class="mainnav">
+        <a href="{{ url_for('cours') }}">Cours</a>
+        <a href="{{ url_for('test', mode='blanc') }}">Test blanc</a>
+        <a href="{{ url_for('test', mode='examen') }}">Test examen</a>
+        <a href="{{ url_for('astuces') }}">Astuces</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Application de révision — Plongeur Autonome Niveau II (FFESSM, tables MN90).
+         Contenu d'après le cours théorique MPS 2011. Outil pédagogique d'entraînement.</p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

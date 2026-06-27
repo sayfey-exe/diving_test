@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Page introuvable — Plongée N2{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>🌊 Page introuvable</h1>
+  <p class="hero-sub">Cette page n'existe pas… ou elle a coulé. Remontez à la surface :</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('index') }}">Retour à l'accueil</a>
+  </div>
+</section>
+{% endblock %}

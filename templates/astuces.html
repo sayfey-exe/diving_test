@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Astuces &amp; méthode — Plongée N2{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>💡 Astuces &amp; méthode</h1>
+  <p>Tout ce qui te donne des points en plus le jour de l'examen : méthode, pièges et bons réflexes.</p>
+</div>
+
+<div class="astuces-grid">
+  {% for a in astuces %}
+  <section class="astuce-card">
+    <h2><span class="astuce-icon">{{ a.icon }}</span> {{ a.titre }}</h2>
+    <ul>
+      {% for c in a.conseils %}<li>{{ c|safe }}</li>{% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</div>
+
+<div class="cta-band">
+  <p>Prêt à te tester ?</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('test', mode='blanc') }}">📝 Test blanc</a>
+    <a class="btn btn-ghost" href="{{ url_for('test', mode='examen') }}">⏱️ Test examen</a>
+  </div>
+</div>
+{% endblock %}

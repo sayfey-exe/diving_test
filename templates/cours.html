@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Les fiches de cours — Plongée N2{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>📚 Les fiches de cours</h1>
+  <p>15 chapitres résumés. Chaque fiche se termine par 3 questions pour vérifier que c'est acquis.</p>
+</div>
+
+<div class="course-grid">
+  {% for c in chapitres %}
+  <a class="course-card" href="{{ url_for('chapitre', slug=c.slug) }}">
+    <div class="course-card-top">
+      <span class="course-icon">{{ c.icon }}</span>
+      <span class="course-num">Chapitre {{ c.num }}</span>
+    </div>
+    <h3>{{ c.title }}</h3>
+    <p>{{ c.accroche }}</p>
+    <span class="feature-link">Réviser →</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

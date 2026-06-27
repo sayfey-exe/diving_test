@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Plongée N2 — Réviser et s'entraîner{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Prépare ton <span>Niveau 2</span> en plongée</h1>
+  <p class="hero-sub">
+    Révise le cours théorique chapitre par chapitre, teste-toi en conditions réelles
+    et décroche ton brevet. {{ nb_questions }} questions au programme.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('cours') }}">📚 Réviser le cours</a>
+    <a class="btn btn-ghost" href="{{ url_for('test', mode='blanc') }}">📝 Faire un test blanc</a>
+  </div>
+</section>
+
+<section class="cards-row">
+  <a class="feature-card" href="{{ url_for('cours') }}">
+    <div class="feature-icon">📚</div>
+    <h3>Les 15 fiches de cours</h3>
+    <p>Un résumé clair par chapitre, l'essentiel à retenir, et 3 questions d'auto-évaluation à la fin de chaque fiche.</p>
+    <span class="feature-link">Voir les fiches →</span>
+  </a>
+
+  <a class="feature-card" href="{{ url_for('test', mode='blanc') }}">
+    <div class="feature-icon">📝</div>
+    <h3>Test blanc</h3>
+    <p>{{ nb_test }} questions tirées au sort. Navigation libre, tu peux passer une question, puis correction détaillée à la fin.</p>
+    <span class="feature-link">Démarrer →</span>
+  </a>
+
+  <a class="feature-card" href="{{ url_for('test', mode='examen') }}">
+    <div class="feature-icon">⏱️</div>
+    <h3>Test examen</h3>
+    <p>{{ nb_test }} questions chronométrées, comme le jour J. Pas de correction pendant l'épreuve : juste ton score à la fin.</p>
+    <span class="feature-link">Passer l'examen →</span>
+  </a>
+
+  <a class="feature-card" href="{{ url_for('astuces') }}">
+    <div class="feature-icon">💡</div>
+    <h3>Astuces &amp; méthode</h3>
+    <p>Les pièges classiques, la méthode pour les QCM et les exercices de tables, et les bons réflexes le jour de l'examen.</p>
+    <span class="feature-link">Lire les astuces →</span>
+  </a>
+</section>
+
+<section class="chapters-preview">
+  <h2>Le programme du Niveau 2</h2>
+  <div class="chip-grid">
+    {% for c in chapitres %}
+    <a class="chip" href="{{ url_for('chapitre', slug=c.slug) }}">
+      <span class="chip-icon">{{ c.icon }}</span>
+      <span class="chip-num">{{ c.num }}.</span> {{ c.title }}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

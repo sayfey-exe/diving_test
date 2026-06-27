@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ "Test blanc" if mode == "blanc" else "Test examen" }} — Plongée N2{% endblock %}
+
+{% block content %}
+<div id="test-app"
+     data-mode="{{ mode }}"
+     data-duree="{{ duree_min }}"
+     data-submit-url="{{ url_for('test_submit', mode=mode) }}">
+
+  <!-- Écran d'accueil du test -->
+  <section id="test-intro" class="test-intro">
+    {% if mode == "blanc" %}
+    <span class="test-badge badge-blanc">Test blanc</span>
+    <h1>📝 Test blanc — {{ nb_questions }} questions</h1>
+    <ul class="test-rules">
+      <li>✔ {{ nb_questions }} questions tirées au sort dans tout le programme.</li>
+      <li>✔ Navigation libre : tu peux <strong>passer</strong> une question et y revenir.</li>
+      <li>✔ <strong>Correction détaillée</strong> à la fin, avec l'explication et le chapitre concerné.</li>
+      <li>✔ Pas de chronomètre : prends le temps de bien réfléchir.</li>
+    </ul>
+    {% else %}
+    <span class="test-badge badge-examen">Test examen</span>
+    <h1>⏱️ Test examen — {{ nb_questions }} questions</h1>
+    <ul class="test-rules">
+      <li>✔ {{ nb_questions }} questions en conditions réelles.</li>
+      <li>⏱ <strong>Chronomètre : {{ duree_min }} minutes.</strong> Le test se termine automatiquement à la fin du temps.</li>
+      <li>✘ Pas de correction pendant l'épreuve.</li>
+      <li>✔ Score et bilan par chapitre affichés à la fin.</li>
+    </ul>
+    {% endif %}
+    <button class="btn btn-primary btn-lg" id="btn-start">Commencer</button>
+  </section>
+
+  <!-- Écran de jeu -->
+  <section id="test-play" class="test-play" hidden>
+    <div class="test-toolbar">
+      <div class="test-progress">
+        <span id="progress-label">Question 1 / {{ nb_questions }}</span>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      </div>
+      {% if mode == "examen" %}
+      <div class="test-timer" id="timer">--:--</div>
+      {% endif %}
+    </div>
+
+    <div id="question-zone"></div>
+
+    <div class="test-controls">
+      <button class="btn btn-ghost" id="btn-prev">← Précédent</button>
+      <div class="test-controls-right">
+        {% if mode == "blanc" %}
+        <button class="btn btn-ghost" id="btn-skip">Passer</button>
+        {% endif %}
+        <button class="btn btn-primary" id="btn-next">Suivant →</button>
+        <button class="btn btn-success" id="btn-finish" hidden>Terminer le test ✓</button>
+      </div>
+    </div>
+
+    <div class="test-dots" id="test-dots"></div>
+  </section>
+
+  <!-- Écran de résultats -->
+  <section id="test-results" class="test-results" hidden></section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="questions-data" type="application/json">{{ questions|tojson }}</script>
+<script src="{{ url_for('static', filename='test.js') }}"></script>
+{% endblock %}
