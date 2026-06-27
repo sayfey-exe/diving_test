@@ -124,13 +124,18 @@ web et redéploie automatiquement à chaque `git push`.
 
 1. Pousser le projet sur un dépôt **GitHub** (public ou privé).
 2. Créer un compte sur [render.com](https://render.com) et le connecter à GitHub.
-3. Cliquer sur **New → Blueprint**, puis sélectionner le dépôt. Render lit le
-   fichier `render.yaml` fourni et configure tout automatiquement
-   (build, démarrage `gunicorn app:app`, clé `SECRET_KEY` générée).
-   - *Sans Blueprint* : **New → Web Service**, puis renseigner
-     **Build Command** = `pip install -r requirements.txt` et
-     **Start Command** = `gunicorn app:app`.
+3. Cliquer sur **New → Web Service**, sélectionner le dépôt et **la branche**
+   à déployer, puis renseigner :
+   - **Build Command** = `pip install -r requirements.txt`
+   - **Start Command** = `gunicorn app:app --bind 0.0.0.0:$PORT`
+   - (le fichier `render.yaml` fourni permet aussi un déploiement
+     **New → Blueprint** en un clic, qui configure tout automatiquement —
+     build, démarrage, clé `SECRET_KEY` générée).
 4. Valider : l'app est en ligne sous une URL en `…onrender.com`.
+
+> ⚠️ **Important** : la commande de démarrage doit écouter sur le port fourni
+> par l'hébergeur via `$PORT` (`--bind 0.0.0.0:$PORT`). Sans cela, Render
+> n'ouvre aucun port et le déploiement échoue.
 
 > ⓘ Sur l'offre gratuite, le service se met en veille après ~15 min d'inactivité ;
 > la première visite suivante prend quelques dizaines de secondes à « réveiller ».

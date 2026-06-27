@@ -5,8 +5,9 @@ services:
     name: plongee-n2-revision
     runtime: python
     plan: free
+    branch: claude/diving-revision-app-ogizop
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: SECRET_KEY
         generateValue: true        # Render génère une clé de session aléatoire
