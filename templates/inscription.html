@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Créer un compte — Plongée N2{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <h1>Créer un compte</h1>
+  <p class="auth-sub">Suis ta progression : chapitres étudiés et historique de tes tests.</p>
+  <form method="post" class="auth-form">
+    <label>Pseudo
+      <input type="text" name="pseudo" value="{{ pseudo or '' }}" required minlength="2" autocomplete="nickname">
+    </label>
+    <label>E-mail
+      <input type="email" name="email" value="{{ email or '' }}" required autocomplete="email">
+    </label>
+    <label>Mot de passe
+      <input type="password" name="password" required minlength="6" autocomplete="new-password">
+    </label>
+    <label>Confirme le mot de passe
+      <input type="password" name="password2" required minlength="6" autocomplete="new-password">
+    </label>
+    <button type="submit" class="btn btn-primary btn-lg">Créer mon compte</button>
+  </form>
+  <p class="auth-switch">Déjà un compte ? <a href="{{ url_for('connexion') }}">Se connecter</a></p>
+</div>
+{% endblock %}

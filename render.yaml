@@ -1,5 +1,10 @@
 # Configuration de déploiement pour Render (https://render.com).
-# Render lit ce fichier automatiquement (« Blueprint ») pour créer le service.
+# Render lit ce fichier automatiquement (« Blueprint ») pour créer le service
+# web ET une base PostgreSQL gratuite (pour les comptes et statistiques).
+databases:
+  - name: plongee-db
+    plan: free
+
 services:
   - type: web
     name: plongee-n2-revision
@@ -13,3 +18,7 @@ services:
         generateValue: true        # Render génère une clé de session aléatoire
       - key: PYTHON_VERSION
         value: "3.11.9"
+      - key: DATABASE_URL          # connexion Postgres injectée automatiquement
+        fromDatabase:
+          name: plongee-db
+          property: connectionString

@@ -16,6 +16,13 @@ MPS 2011 (tables MN90).
   pendant l'épreuve ; score et bilan par chapitre à la fin.
 - **💡 Astuces & méthode** — pièges classiques, méthode pour les QCM et les
   exercices de tables, bons réflexes le jour de l'examen.
+- **🖼️ Images du cours** — les schémas du document (anatomie, détendeur,
+  profils de plongée, table MN90…) sont intégrés aux fiches concernées.
+- **✏️ Exercices corrigés** — les exercices du cours (autonomie, tables MN90…)
+  avec leur correction (méthode détaillée + valeurs calculables).
+- **👤 Comptes & statistiques** — création de compte et connexion, **suivi des
+  chapitres étudiés** et **historique des résultats** (tests blancs et examens),
+  avec note moyenne et meilleure note.
 
 ## Programme couvert
 
@@ -112,6 +119,21 @@ $env:PORT=8080; python app.py
   `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, puis relancez
   la commande d'activation.
 
+## Comptes et base de données
+
+Les comptes et les statistiques sont stockés dans une base de données configurée
+via la variable d'environnement `DATABASE_URL` :
+
+- **En local** : si `DATABASE_URL` n'est pas définie, l'application crée
+  automatiquement un fichier **SQLite** (`diving.db`). Rien à installer.
+- **En production** : définis `DATABASE_URL` vers une base **PostgreSQL**
+  (recommandé). Les tables sont créées automatiquement au démarrage.
+
+> ⚠️ **Persistance sur l'hébergement gratuit** : sur Render (offre gratuite), le
+> disque est *éphémère* — une base SQLite serait effacée à chaque
+> redéploiement. Pour conserver les comptes, **utilise une base PostgreSQL**
+> (voir ci-dessous, le `render.yaml` en crée une automatiquement).
+
 ## Déploiement en ligne (gratuit)
 
 L'application est prête pour la production : elle se lance avec le serveur
@@ -130,7 +152,8 @@ web et redéploie automatiquement à chaque `git push`.
    - **Start Command** = `gunicorn app:app --bind 0.0.0.0:$PORT`
    - (le fichier `render.yaml` fourni permet aussi un déploiement
      **New → Blueprint** en un clic, qui configure tout automatiquement —
-     build, démarrage, clé `SECRET_KEY` générée).
+     build, démarrage, clé `SECRET_KEY` générée **et une base PostgreSQL
+     gratuite** reliée via `DATABASE_URL` pour les comptes).
 4. Valider : l'app est en ligne sous une URL en `…onrender.com`.
 
 > ⚠️ **Important** : la commande de démarrage doit écouter sur le port fourni
@@ -173,16 +196,29 @@ d'environnement `SECRET_KEY` sur ces plateformes.
 
 ```
 diving_test/
-├── app.py                 # application Flask (routes)
-├── requirements.txt       # dépendances (Flask, gunicorn)
+├── app.py                 # application Flask (routes, auth, suivi)
+├── models.py              # modèles SQLAlchemy (User, TestResult, ChapterStudy)
+├── requirements.txt       # dépendances (Flask, SQLAlchemy, Login, gunicorn…)
 ├── Procfile               # commande de démarrage en production (gunicorn)
-├── render.yaml            # configuration de déploiement Render
+├── render.yaml            # déploiement Render (web + base PostgreSQL)
 ├── data/
-│   ├── content.py         # les 15 fiches de cours + astuces
-│   └── questions.py       # banque de questions des tests
+│   ├── content.py         # les 15 fiches de cours + astuces + images
+│   ├── questions.py       # banque de questions des tests
+│   └── exercices.py       # exercices corrigés par chapitre
 ├── templates/             # gabarits HTML (Jinja2)
-└── static/                # CSS + JavaScript
+└── static/
+    ├── style.css
+    ├── *.js
+    └── img/               # schémas extraits du cours
 ```
+
+## Crédits & sources
+
+Contenu pédagogique d'après le **cours théorique Plongeur Niveau II (MPS, 2011)**
+de la FFESSM. Les schémas intégrés aux fiches proviennent de ce document et
+conservent leurs attributions d'origine (notamment *Alain Foret — Illustra-Pack*,
+*infovisual.info*, et la **table MN90 — FFESSM**). Application destinée à un
+usage **pédagogique et personnel** de révision.
 
 ## Avertissement
 

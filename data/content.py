@@ -290,6 +290,14 @@ CHAPITRES = [
         "title": "Les barotraumatismes",
         "icon": "👂",
         "accroche": "Des accidents mécaniques liés à la pression, faciles à prévenir.",
+        "images": [
+            {"src": "oreille.png", "alt": "Anatomie de l'oreille",
+             "caption": "Anatomie de l'oreille : externe, moyenne et interne."},
+            {"src": "sinus.png", "alt": "Les sinus de la face",
+             "caption": "Les sinus (frontal, ethmoïdal, maxillaire)."},
+            {"src": "appareil-respiratoire.png", "alt": "Appareil respiratoire",
+             "caption": "L'appareil respiratoire (surpression pulmonaire)."},
+        ],
         "resume": [
             {
                 "titre": "Mécanisme général",
@@ -439,6 +447,10 @@ CHAPITRES = [
         "title": "Les accidents de décompression (ADD)",
         "icon": "🩸",
         "accroche": "Le risque majeur de la plongée à l'air — mécanisme, symptômes, traitement, prévention.",
+        "images": [
+            {"src": "circulation-sanguine.png", "alt": "Circulation sanguine",
+             "caption": "La circulation sanguine : les bulles d'azote diffusent dans tout l'organisme."},
+        ],
         "resume": [
             {
                 "titre": "Mécanisme",
@@ -712,6 +724,14 @@ CHAPITRES = [
         "title": "Les tables MN90 — 1ère partie",
         "icon": "📊",
         "accroche": "Le protocole de décompression de référence pour le passage du Niveau 2.",
+        "images": [
+            {"src": "profil-plongee.png", "alt": "Profil de plongée et lecture de table",
+             "caption": "Profil d'une plongée simple et lecture de la table MN90 (P, durée, palier, DTR, GPS)."},
+            {"src": "courbe-securite.png", "alt": "Courbe de sécurité MN90",
+             "caption": "La courbe de sécurité : zone de plongées sans palier (1ère plongée du jour)."},
+            {"src": "table-mn90.png", "alt": "Table MN90 FFESSM",
+             "caption": "La table MN90 (FFESSM) — à utiliser pour les exercices."},
+        ],
         "resume": [
             {
                 "titre": "Présentation",
@@ -1014,6 +1034,18 @@ CHAPITRES = [
         "title": "Le matériel",
         "icon": "🤿",
         "accroche": "Bouteilles, détendeurs, gilet, instruments : connaître et entretenir son équipement.",
+        "images": [
+            {"src": "detendeur.png", "alt": "Schéma d'un détendeur",
+             "caption": "Le détendeur : 1er étage (HP→MP) et 2e étage (pression ambiante, à la demande)."},
+            {"src": "gilet.png", "alt": "Gilet stabilisateur",
+             "caption": "Le gilet stabilisateur (bouée de sécurité et de confort)."},
+            {"src": "ordinateur.png", "alt": "Ordinateur de plongée",
+             "caption": "L'ordinateur de plongée : calcul des paliers en temps réel."},
+            {"src": "parachute.png", "alt": "Parachute de palier",
+             "caption": "Le parachute de palier : repérage en surface."},
+            {"src": "boussole.png", "alt": "Boussole de plongée",
+             "caption": "La boussole : orientation sous l'eau."},
+        ],
         "resume": [
             {
                 "titre": "Les bouteilles",

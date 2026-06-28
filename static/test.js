@@ -192,10 +192,19 @@
     });
     html += '</div>';
 
+    // Sauvegarde / invitation à se connecter
+    if (data.saved) {
+      html += '<p class="save-hint save-ok">✅ Résultat enregistré dans ton profil.</p>';
+    } else {
+      html += '<p class="save-hint save-info">💾 <a href="/connexion">Connecte-toi</a> ' +
+        'ou <a href="/inscription">crée un compte</a> pour sauvegarder tes résultats et suivre ta progression.</p>';
+    }
+
     // Actions
     html += '<div class="results-actions">' +
       '<a class="btn btn-primary" href="' + window.location.pathname + '">↻ Refaire un test</a>' +
       '<a class="btn btn-ghost" href="/cours">📚 Revoir le cours</a>' +
+      (data.authenticated ? '<a class="btn btn-ghost" href="/profil">👤 Mon profil</a>' : '') +
       '</div>';
 
     // Correction détaillée (mode blanc uniquement)

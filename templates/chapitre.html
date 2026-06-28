@@ -17,6 +17,17 @@
   </header>
 
   <div class="fiche-body">
+    {% if chap.images %}
+    <section class="fiche-gallery">
+      {% for img in chap.images %}
+      <figure class="fiche-figure">
+        <img src="{{ url_for('static', filename='img/' ~ img.src) }}" alt="{{ img.alt }}" loading="lazy">
+        <figcaption>{{ img.caption }}</figcaption>
+      </figure>
+      {% endfor %}
+    </section>
+    {% endif %}
+
     {% for section in chap.resume %}
     <section class="resume-section">
       <h2>{{ section.titre }}</h2>
@@ -48,6 +59,25 @@
         {% for e in chap.essentiel %}<li>{{ e|safe }}</li>{% endfor %}
       </ul>
     </section>
+
+    {% if exercices %}
+    <section class="exercices">
+      <h2>✏️ Exercices</h2>
+      {% if chap.num in [11, 12] %}
+      <p class="exo-note">{{ note_tables|safe }}</p>
+      {% endif %}
+      {% for exo in exercices %}
+      <details class="exo">
+        <summary>
+          <span class="exo-titre">{{ exo.titre }}</span>
+          <span class="exo-enonce">{{ exo.enonce|safe }}</span>
+          <span class="exo-voir">Voir la correction ▾</span>
+        </summary>
+        <div class="exo-correction">{{ exo.correction|safe }}</div>
+      </details>
+      {% endfor %}
+    </section>
+    {% endif %}
   </div>
 
   <section class="quiz-fiche" data-quiz>

@@ -1,3 +1,12 @@
+// Zoom au clic sur les images des fiches.
+(function () {
+  document.querySelectorAll(".fiche-figure img").forEach(function (img) {
+    img.addEventListener("click", function () {
+      img.classList.toggle("img-zoomed");
+    });
+  });
+})();
+
 // Auto-évaluation interactive sur les fiches de cours.
 // Chaque question révèle immédiatement la bonne réponse + l'explication.
 (function () {

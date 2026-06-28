@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Mon profil — Plongée N2{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>👤 Bonjour {{ current_user.pseudo }}</h1>
+  <p>Voici ton suivi de révision.</p>
+</div>
+
+<section class="stats-row">
+  <div class="stat-box">
+    <span class="stat-num">{{ stats.nb_chap_etudies }} / {{ stats.nb_chap_total }}</span>
+    <span class="stat-label">Chapitres étudiés</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num">{{ stats.nb_tests }}</span>
+    <span class="stat-label">Tests réalisés</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num">{{ stats.meilleure_note if stats.meilleure_note is not none else '—' }}{% if stats.meilleure_note is not none %}/20{% endif %}</span>
+    <span class="stat-label">Meilleure note</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num">{{ stats.moyenne if stats.moyenne is not none else '—' }}{% if stats.moyenne is not none %}/20{% endif %}</span>
+    <span class="stat-label">Moyenne</span>
+  </div>
+</section>
+
+<section class="profil-section">
+  <h2>📚 Progression dans le cours</h2>
+  <div class="chip-grid">
+    {% for c in chapitres %}
+    <a class="chip {% if c.slug in studied %}chip-done{% endif %}" href="{{ url_for('chapitre', slug=c.slug) }}">
+      <span class="chip-icon">{% if c.slug in studied %}✅{% else %}⬜{% endif %}</span>
+      <span class="chip-num">{{ c.num }}.</span> {{ c.title }}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="profil-section">
+  <h2>📝 Historique des tests</h2>
+  {% if results %}
+  <div class="table-wrap">
+    <table class="data-table history-table">
+      <thead>
+        <tr><th>Date</th><th>Type</th><th>Score</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>{{ r.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>
+            <span class="test-badge {{ 'badge-blanc' if r.mode == 'blanc' else 'badge-examen' }}">
+              {{ 'Test blanc' if r.mode == 'blanc' else 'Test examen' }}
+            </span>
+          </td>
+          <td>{{ r.score }} / {{ r.total }}</td>
+          <td class="{{ 'note-ok' if r.note20 >= 10 else 'note-ko' }}"><strong>{{ r.note20 }}/20</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty-state">Tu n'as pas encore passé de test.
+     <a href="{{ url_for('test', mode='blanc') }}">Commence un test blanc →</a></p>
+  {% endif %}
+</section>
+{% endblock %}

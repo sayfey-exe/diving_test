@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+"""Modèles de données : utilisateurs, résultats de tests, chapitres étudiés."""
+
+from datetime import datetime
+
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+db = SQLAlchemy()
+
+
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    pseudo = db.Column(db.String(80), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    results = db.relationship(
+        "TestResult", backref="user", lazy=True, cascade="all, delete-orphan"
+    )
+    studies = db.relationship(
+        "ChapterStudy", backref="user", lazy=True, cascade="all, delete-orphan"
+    )
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
+class TestResult(db.Model):
+    __tablename__ = "test_results"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    mode = db.Column(db.String(20), nullable=False)       # "blanc" | "examen"
+    score = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Integer, nullable=False)
+    note20 = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ChapterStudy(db.Model):
+    __tablename__ = "chapter_studies"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    chapter_slug = db.Column(db.String(80), nullable=False)
+    studied_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "chapter_slug", name="uq_user_chapter"),
+    )
