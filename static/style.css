@@ -353,6 +353,45 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .exo[open] .exo-voir { color: var(--ink-soft); }
 .exo-correction { padding: 0 1.2rem 1.2rem; border-top: 1px dashed var(--border); margin-top: 0.2rem; padding-top: 0.9rem; line-height: 1.7; }
 
+/* ---------- Navbar admin ---------- */
+.nav-admin { background: rgba(255,107,94,0.22); }
+.btn-sm { padding: 0.4rem 0.9rem; font-size: 0.9rem; }
+
+/* ---------- Bannière de comparaison ---------- */
+.compare-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1rem 1.3rem; margin-bottom: 1.6rem; }
+.compare-good { color: var(--success); font-weight: 700; }
+.compare-bad { color: var(--warn); font-weight: 700; }
+.compare-banner .btn { margin-left: auto; }
+
+/* ---------- Graphique ---------- */
+.chart-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.2rem; }
+.chart-svg { width: 100%; height: auto; display: block; }
+.chart-grid { stroke: #e6eef5; stroke-width: 1; }
+.chart-pass { stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0.8; }
+.chart-axis { fill: var(--ink-soft); font-size: 11px; font-family: inherit; }
+.chart-val { fill: var(--ink); font-size: 11px; font-weight: 700; font-family: inherit; }
+.chart-line { fill: none; stroke: var(--primary); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart-dot { stroke: #fff; stroke-width: 2; }
+.dot-blanc { fill: var(--primary); }
+.dot-examen { fill: var(--accent); }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 1.2rem; justify-content: center; margin-top: 0.8rem; font-size: 0.85rem; color: var(--ink-soft); }
+.lg-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; vertical-align: middle; }
+.lg-line { display: inline-block; width: 18px; border-top: 2px dashed var(--warn); vertical-align: middle; }
+
+/* ---------- Classement ---------- */
+.leaderboard td, .leaderboard th { text-align: left; }
+.leaderboard .rank { text-align: center; font-weight: 800; font-size: 1.1rem; width: 3rem; }
+.leaderboard .pseudo { font-weight: 700; }
+.leaderboard .me-row { background: #eaf5fc !important; }
+.you-tag, .admin-tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 0.1rem 0.5rem; border-radius: 999px; vertical-align: middle; }
+.you-tag { background: var(--primary); color: #fff; }
+.admin-tag { background: var(--accent); color: #fff; }
+
+/* ---------- Admin ---------- */
+.admin-table { font-size: 0.9rem; }
+.admin-table td, .admin-table th { text-align: left; }
+.email-cell { color: var(--ink-soft); }
+
 /* ---------- Footer ---------- */
 .footer { background: var(--bg); color: #9fbdd6; padding: 1.4rem 0; font-size: 0.85rem; margin-top: auto; }
 .footer p { margin: 0; }

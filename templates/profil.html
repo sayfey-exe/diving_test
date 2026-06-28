@@ -26,6 +26,30 @@
   </div>
 </section>
 
+{% if global_avg is not none %}
+<section class="compare-banner">
+  <span>🏁 Moyenne de la communauté : <strong>{{ global_avg }}/20</strong>
+    ({{ nb_joueurs }} joueur{{ 's' if nb_joueurs > 1 else '' }})</span>
+  {% if stats.moyenne is not none %}
+    {% if stats.moyenne >= global_avg %}
+    <span class="compare-good">Tu es au-dessus de la moyenne 🎉</span>
+    {% else %}
+    <span class="compare-bad">Encore un effort pour dépasser la moyenne 💪</span>
+    {% endif %}
+  {% endif %}
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('classement') }}">Voir le classement →</a>
+</section>
+{% endif %}
+
+{% if chart|length >= 1 %}
+<section class="profil-section">
+  <h2>📈 Évolution de tes scores</h2>
+  <div class="chart-card">
+    <div id="score-chart" data-points='{{ chart|tojson }}'></div>
+  </div>
+</section>
+{% endif %}
+
 <section class="profil-section">
   <h2>📚 Progression dans le cours</h2>
   <div class="chip-grid">
@@ -67,4 +91,8 @@
      <a href="{{ url_for('test', mode='blanc') }}">Commence un test blanc →</a></p>
   {% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='chart.js') }}"></script>
 {% endblock %}

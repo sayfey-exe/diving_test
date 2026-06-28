@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Accès refusé — Plongée N2{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>🛑 Accès réservé</h1>
+  <p class="hero-sub">Cette page est réservée aux administrateurs.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('index') }}">Retour à l'accueil</a>
+  </div>
+</section>
+{% endblock %}

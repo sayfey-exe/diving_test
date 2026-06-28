@@ -22,7 +22,11 @@ MPS 2011 (tables MN90).
   avec leur correction (méthode détaillée + valeurs calculables).
 - **👤 Comptes & statistiques** — création de compte et connexion, **suivi des
   chapitres étudiés** et **historique des résultats** (tests blancs et examens),
-  avec note moyenne et meilleure note.
+  avec note moyenne, meilleure note et **graphique d'évolution des scores**.
+- **🏆 Classement** — comparaison à la **moyenne de la communauté** et classement
+  des joueurs par note moyenne (esprit de compétition).
+- **🛡️ Mode administrateur** — vue de tous les comptes et de leurs scores
+  (réservé aux e-mails déclarés administrateurs).
 
 ## Programme couvert
 
@@ -133,6 +137,22 @@ via la variable d'environnement `DATABASE_URL` :
 > disque est *éphémère* — une base SQLite serait effacée à chaque
 > redéploiement. Pour conserver les comptes, **utilise une base PostgreSQL**
 > (voir ci-dessous, le `render.yaml` en crée une automatiquement).
+
+### Mode administrateur
+
+Le mode admin (vue de tous les comptes et de leurs scores, page `/admin`) est
+réservé aux comptes dont l'e-mail est listé dans la variable d'environnement
+**`ADMIN_EMAILS`** (e-mails séparés par des virgules) :
+
+```bash
+# Linux / macOS — lancement local en admin
+ADMIN_EMAILS="ton.email@exemple.fr" python app.py
+```
+
+Sur Render : onglet **Environment** du service web → ajoute la variable
+`ADMIN_EMAILS` avec ton (tes) e-mail(s). Le lien **🛡️ Admin** apparaît alors
+dans la barre de navigation pour ces comptes. Aucune migration de base n'est
+nécessaire (le statut admin est déterminé par l'e-mail, pas stocké en base).
 
 ## Déploiement en ligne (gratuit)
 

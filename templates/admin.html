@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Administration — Plongée N2{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>🛡️ Administration</h1>
+  <p>Vue d'ensemble de tous les comptes et de leurs résultats.</p>
+</div>
+
+<section class="stats-row">
+  <div class="stat-box">
+    <span class="stat-num">{{ totaux.nb_comptes }}</span>
+    <span class="stat-label">Comptes</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num">{{ totaux.nb_tests }}</span>
+    <span class="stat-label">Tests passés</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num">{{ totaux.global_avg if totaux.global_avg is not none else '—' }}{% if totaux.global_avg is not none %}/20{% endif %}</span>
+    <span class="stat-label">Moyenne globale</span>
+  </div>
+</section>
+
+<div class="table-wrap">
+  <table class="data-table admin-table">
+    <thead>
+      <tr>
+        <th>Pseudo</th><th>E-mail</th><th>Inscrit le</th>
+        <th>Tests</th><th>Moyenne</th><th>Meilleure</th><th>Dernier test</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.pseudo }}{% if r.is_admin %} <span class="admin-tag">admin</span>{% endif %}</td>
+        <td class="email-cell">{{ r.email }}</td>
+        <td>{{ r.created_at.strftime('%d/%m/%Y') if r.created_at else '—' }}</td>
+        <td>{{ r.nb_tests }}</td>
+        <td>{{ (r.moyenne ~ '/20') if r.moyenne is not none else '—' }}</td>
+        <td>{{ (r.meilleure ~ '/20') if r.meilleure is not none else '—' }}</td>
+        <td>{{ r.derniere.strftime('%d/%m/%Y %H:%M') if r.derniere else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

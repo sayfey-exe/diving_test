@@ -353,6 +353,158 @@ QUESTIONS_SUPP = [
 ]
 
 
+# Questions issues des EXERCICES du cours (calculs + méthode des tables MN90).
+# Les exercices de calcul sont chiffrés ; les exercices de tables portent sur la
+# méthode (valeurs à retenir, classification, tableaux), toujours vérifiables.
+EXERCICE_QUESTIONS = [
+    # --- Calcul d'autonomie (ch.4)
+    {
+        "chapitre": 4,
+        "q": "Bloc de 15 L à 200 bar, plongée à 40 m, consommation 20 L/min en surface, "
+             "réserve 50 bar. Au bout de combien de temps passe-t-on sur réserve ?",
+        "options": ["18 min", "22,5 min", "30 min", "45 min"],
+        "correct": 1,
+        "explication": "Air consommable = (200−50)×15 = 2250 L ; conso à 40 m = 20×5 = 100 L/min ; "
+                       "2250 ÷ 100 = 22,5 min.",
+    },
+    {
+        "chapitre": 4,
+        "q": "Bloc de 12 L à 200 bar, plongée à 20 m, consommation 18 L/min, réserve 50 bar. "
+             "Quelle est l'autonomie avant la réserve ?",
+        "options": ["18 min", "≈ 25 min", "≈ 33 min", "≈ 50 min"],
+        "correct": 2,
+        "explication": "Air consommable = (200−50)×12 = 1800 L ; conso à 20 m = 18×3 = 54 L/min ; "
+                       "1800 ÷ 54 ≈ 33 min.",
+    },
+    # --- Pression (ch.1)
+    {
+        "chapitre": 1,
+        "q": "Quelle est la pression absolue à 33 m de profondeur ?",
+        "options": ["3,3 bar", "4 bar", "4,3 bar", "5 bar"],
+        "correct": 2,
+        "explication": "Pabs = 1 + 33/10 = 4,3 bar.",
+    },
+    {
+        "chapitre": 1,
+        "q": "À quelle profondeur la pression absolue vaut-elle 3,5 bar ?",
+        "options": ["15 m", "25 m", "35 m", "2,5 m"],
+        "correct": 1,
+        "explication": "Phyd = 3,5 − 1 = 2,5 bar → profondeur = 25 m.",
+    },
+    # --- Boyle-Mariotte (ch.3)
+    {
+        "chapitre": 3,
+        "q": "Un ballon souple contient 10 L d'air en surface. Quel sera son volume à 20 m ?",
+        "options": ["10 L", "≈ 3,3 L", "5 L", "30 L"],
+        "correct": 1,
+        "explication": "1×10 = 3×V2 → V2 = 10/3 ≈ 3,3 L (Pabs = 3 bar à 20 m).",
+    },
+    # --- Dalton (ch.8)
+    {
+        "chapitre": 8,
+        "q": "En plongée à l'air (21 % d'O2), à quelle profondeur la PpO2 atteint-elle 1,6 bar ?",
+        "options": ["environ 40 m", "environ 50 m", "environ 66 m", "environ 80 m"],
+        "correct": 2,
+        "explication": "Pabs = 1,6 / 0,21 ≈ 7,6 bar → profondeur ≈ (7,6−1)×10 ≈ 66 m.",
+    },
+    # --- Tables MN90 partie 1 (ch.11) : méthode
+    {
+        "chapitre": 11,
+        "q": "Pour une plongée à 21 m, quelle profondeur retient-on pour entrer dans la table MN90 ?",
+        "options": ["20 m", "21 m", "22 m", "25 m"],
+        "correct": 2,
+        "explication": "21 m n'existe pas dans la table → on prend la valeur immédiatement supérieure : 22 m.",
+    },
+    {
+        "chapitre": 11,
+        "q": "Pour une plongée à 34 m, quelle profondeur retient-on dans la table MN90 ?",
+        "options": ["30 m", "34 m", "35 m", "40 m"],
+        "correct": 2,
+        "explication": "34 m n'existe pas → valeur immédiatement supérieure : 35 m.",
+    },
+    {
+        "chapitre": 11,
+        "q": "Une durée de plongée de 41 min n'existe pas dans la table. Quelle durée retient-on ?",
+        "options": ["40 min", "41 min", "45 min", "On interpole"],
+        "correct": 2,
+        "explication": "On prend la durée immédiatement supérieure : 45 min (jamais d'interpolation).",
+    },
+    {
+        "chapitre": 11,
+        "q": "Remontée rapide depuis 20 m : à quelle profondeur faut-il redescendre, et pour quel palier ?",
+        "options": [
+            "À 10 m, palier de 5 min",
+            "À 3 m, palier de 2 min",
+            "À 15 m, palier de 3 min",
+            "On ne redescend pas",
+        ],
+        "correct": 0,
+        "explication": "On redescend à la mi-profondeur (10 m) en moins de 3 min pour un palier de 5 min, "
+                       "puis au moins 2 min à 3 m.",
+    },
+    {
+        "chapitre": 11,
+        "q": "Lors d'une remontée lente (ex. de 22 à 17 m en 5 min), que fait-on de cette durée ?",
+        "options": [
+            "On l'ignore",
+            "On l'intègre à la durée de plongée (DP)",
+            "On la retire de la DP",
+            "On la compte comme un palier",
+        ],
+        "correct": 1,
+        "explication": "La durée de la remontée lente s'ajoute à la durée de plongée pour le calcul des paliers.",
+    },
+    {
+        "chapitre": 11,
+        "q": "Palier interrompu : quelle est la conduite à tenir ?",
+        "options": [
+            "Remonter directement en surface",
+            "Refaire seulement la moitié du palier",
+            "Redescendre au palier en moins de 3 min et le refaire entièrement",
+            "Attendre 15 min puis redescendre",
+        ],
+        "correct": 2,
+        "explication": "On doit être redescendu au palier en moins de 3 min et le refaire en entier "
+                       "(ainsi que les suivants).",
+    },
+    # --- Tables MN90 partie 2 (ch.12) : méthode
+    {
+        "chapitre": 12,
+        "q": "Plongée successive : avec quel tableau calcule-t-on l'azote résiduel ?",
+        "options": ["Le tableau 1", "Le tableau 2", "Le tableau IV", "La courbe de sécurité"],
+        "correct": 0,
+        "explication": "Le tableau 1 donne l'azote résiduel (selon le GPS et l'intervalle de surface).",
+    },
+    {
+        "chapitre": 12,
+        "q": "Plongée successive : avec quel tableau calcule-t-on la majoration ?",
+        "options": ["Le tableau 1", "Le tableau 2", "Le tableau III", "La courbe de sécurité"],
+        "correct": 1,
+        "explication": "Le tableau 2 donne la majoration (selon l'azote résiduel et la profondeur prévue).",
+    },
+    {
+        "chapitre": 12,
+        "q": "Une 1ère plongée se termine à 9h00, la 2ème commence à 11h15. Ces plongées sont :",
+        "options": ["Consécutives", "Successives", "Isolées", "Interdites"],
+        "correct": 1,
+        "explication": "Intervalle de 2h15 → 15 min ≤ IS < 12 h → plongées successives.",
+    },
+    {
+        "chapitre": 12,
+        "q": "L'intervalle de surface (2h15) n'existe pas dans le tableau 1. Quelle valeur prend-on ?",
+        "options": [
+            "La valeur immédiatement supérieure",
+            "La valeur immédiatement inférieure (sécurité)",
+            "La moyenne des deux",
+            "Zéro",
+        ],
+        "correct": 1,
+        "explication": "Pour l'intervalle dans le tableau 1, on prend la valeur inférieure → plus d'azote "
+                       "résiduel → principe de sécurité.",
+    },
+]
+
+
 def _chapitre_titre(num):
     for c in CHAPITRES:
         if c["num"] == num:
@@ -376,20 +528,21 @@ def build_question_bank():
                 "correct": q["correct"],
                 "explication": q["explication"],
             })
-    # 2) Questions supplémentaires
-    for i, q in enumerate(QUESTIONS_SUPP):
-        num = q["chapitre"]
-        chap = next(c for c in CHAPITRES if c["num"] == num)
-        bank.append({
-            "id": f"s{i}",
-            "chapitre": num,
-            "chapitre_titre": chap["title"],
-            "chapitre_slug": chap["slug"],
-            "q": q["q"],
-            "options": q["options"],
-            "correct": q["correct"],
-            "explication": q["explication"],
-        })
+    # 2) Questions supplémentaires + 3) questions issues des exercices
+    for prefix, source in (("s", QUESTIONS_SUPP), ("e", EXERCICE_QUESTIONS)):
+        for i, q in enumerate(source):
+            num = q["chapitre"]
+            chap = next(c for c in CHAPITRES if c["num"] == num)
+            bank.append({
+                "id": f"{prefix}{i}",
+                "chapitre": num,
+                "chapitre_titre": chap["title"],
+                "chapitre_slug": chap["slug"],
+                "q": q["q"],
+                "options": q["options"],
+                "correct": q["correct"],
+                "explication": q["explication"],
+            })
     return bank
 
 

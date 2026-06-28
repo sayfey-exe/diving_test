@@ -20,6 +20,8 @@ from flask import (
 from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user,
 )
+from functools import wraps
+from sqlalchemy import func
 
 from data.content import CHAPITRES, ASTUCES
 from data.questions import QUESTION_BANK, QUESTION_BY_ID
@@ -47,12 +49,38 @@ login_manager.login_message = "Connecte-toi pour accéder à ton espace personne
 NB_QUESTIONS_TEST = 40
 DUREE_EXAMEN_MIN = 40  # minutes pour le mode examen
 
+# Comptes administrateurs : liste d'e-mails dans la variable ADMIN_EMAILS
+# (séparés par des virgules). Pas de migration de base nécessaire.
+ADMIN_EMAILS = {
+    e.strip().lower()
+    for e in os.environ.get("ADMIN_EMAILS", "").split(",")
+    if e.strip()
+}
+
 CHAPITRE_BY_SLUG = {c["slug"]: c for c in CHAPITRES}
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+
+def is_admin(user=None):
+    user = user or current_user
+    return (
+        getattr(user, "is_authenticated", False)
+        and (user.email or "").lower() in ADMIN_EMAILS
+    )
+
+
+def admin_required(view):
+    @wraps(view)
+    @login_required
+    def wrapped(*args, **kwargs):
+        if not is_admin():
+            abort(403)
+        return view(*args, **kwargs)
+    return wrapped
 
 
 with app.app_context():
@@ -184,6 +212,7 @@ def profil():
         .all()
     )
     studied = _studied_slugs()
+    moyenne = round(sum(r.note20 for r in results) / len(results), 1) if results else None
 
     # Statistiques synthétiques
     stats = {
@@ -191,15 +220,67 @@ def profil():
         "nb_chap_etudies": len(studied),
         "nb_chap_total": len(CHAPITRES),
         "meilleure_note": max((r.note20 for r in results), default=None),
-        "moyenne": round(sum(r.note20 for r in results) / len(results), 1) if results else None,
+        "moyenne": moyenne,
     }
+
+    # Données du graphique d'évolution (ordre chronologique).
+    chart = [
+        {
+            "date": r.created_at.strftime("%d/%m"),
+            "note": r.note20,
+            "mode": r.mode,
+        }
+        for r in reversed(results)
+    ]
+
+    # Comparaison à la communauté.
+    global_avg, nb_joueurs = _global_average()
+
     return render_template(
         "profil.html",
         results=results,
         studied=studied,
         chapitres=CHAPITRES,
         stats=stats,
+        chart=chart,
+        global_avg=global_avg,
+        nb_joueurs=nb_joueurs,
     )
+
+
+@app.route("/classement")
+def classement():
+    """Classement de la communauté par note moyenne (compétition)."""
+    rows = _leaderboard()
+    global_avg, nb_joueurs = _global_average()
+    mon_rang = None
+    if current_user.is_authenticated:
+        for i, r in enumerate(rows, start=1):
+            if r["user_id"] == current_user.id:
+                mon_rang = i
+                break
+    return render_template(
+        "classement.html",
+        rows=rows,
+        global_avg=global_avg,
+        nb_joueurs=nb_joueurs,
+        mon_rang=mon_rang,
+        current_uid=current_user.id if current_user.is_authenticated else None,
+    )
+
+
+@app.route("/admin")
+@admin_required
+def admin():
+    """Tableau de bord administrateur : tous les comptes et leurs scores."""
+    rows = _user_aggregates()
+    global_avg, nb_joueurs = _global_average()
+    totaux = {
+        "nb_comptes": User.query.count(),
+        "nb_tests": TestResult.query.count(),
+        "global_avg": global_avg,
+    }
+    return render_template("admin.html", rows=rows, totaux=totaux)
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +302,52 @@ def _marquer_etudie(slug):
     if not existe:
         db.session.add(ChapterStudy(user_id=current_user.id, chapter_slug=slug))
         db.session.commit()
+
+
+def _global_average():
+    """Moyenne globale des notes (tous comptes) et nombre de joueurs ayant testé."""
+    avg = db.session.query(func.avg(TestResult.note20)).scalar()
+    nb_joueurs = db.session.query(
+        func.count(func.distinct(TestResult.user_id))
+    ).scalar() or 0
+    return (round(avg, 1) if avg is not None else None), nb_joueurs
+
+
+def _user_aggregates():
+    """Agrégats par utilisateur : nb tests, moyenne, meilleure note, dernière activité."""
+    rows = (
+        db.session.query(
+            User.id, User.pseudo, User.email, User.created_at,
+            func.count(TestResult.id).label("nb"),
+            func.avg(TestResult.note20).label("moy"),
+            func.max(TestResult.note20).label("best"),
+            func.max(TestResult.created_at).label("last"),
+        )
+        .outerjoin(TestResult, TestResult.user_id == User.id)
+        .group_by(User.id)
+        .all()
+    )
+    result = []
+    for r in rows:
+        result.append({
+            "user_id": r.id,
+            "pseudo": r.pseudo,
+            "email": r.email,
+            "created_at": r.created_at,
+            "nb_tests": r.nb or 0,
+            "moyenne": round(r.moy, 1) if r.moy is not None else None,
+            "meilleure": round(r.best, 1) if r.best is not None else None,
+            "derniere": r.last,
+            "is_admin": (r.email or "").lower() in ADMIN_EMAILS,
+        })
+    return result
+
+
+def _leaderboard():
+    """Classement des joueurs ayant passé au moins un test, par note moyenne."""
+    rows = [r for r in _user_aggregates() if r["nb_tests"] > 0]
+    rows.sort(key=lambda r: (r["moyenne"], r["meilleure"]), reverse=True)
+    return rows
 
 
 # ---------------------------------------------------------------------------
@@ -345,12 +472,17 @@ def test_submit(mode):
 
 @app.context_processor
 def inject_globals():
-    return {"chapitres_nav": CHAPITRES}
+    return {"chapitres_nav": CHAPITRES, "user_is_admin": is_admin()}
 
 
 @app.errorhandler(404)
 def page_introuvable(e):
     return render_template("404.html"), 404
+
+
+@app.errorhandler(403)
+def acces_refuse(e):
+    return render_template("403.html"), 403
 
 
 if __name__ == "__main__":
