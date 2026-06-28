@@ -318,6 +318,8 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .auth-form input:focus { outline: none; border-color: var(--primary); }
 .auth-form button { margin-top: 0.4rem; }
 .auth-switch { text-align: center; margin-top: 1.2rem; color: var(--ink-soft); }
+.auth-forgot { text-align: center; margin: 0.9rem 0 0; }
+.auth-forgot a { font-weight: 600; }
 
 /* ---------- Profil / stats ---------- */
 .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.8rem; }

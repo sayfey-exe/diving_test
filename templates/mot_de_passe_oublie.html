@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Mot de passe oublié — Plongée N2{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <h1>Mot de passe oublié</h1>
+  <p class="auth-sub">Indique ton e-mail : on t'envoie un lien pour choisir un nouveau mot de passe.</p>
+  <form method="post" class="auth-form">
+    <label>E-mail
+      <input type="email" name="email" required autocomplete="email">
+    </label>
+    <button type="submit" class="btn btn-primary btn-lg">Envoyer le lien</button>
+  </form>
+  <p class="auth-switch"><a href="{{ url_for('connexion') }}">← Retour à la connexion</a></p>
+</div>
+{% endblock %}

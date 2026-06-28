@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Nouveau mot de passe — Plongée N2{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <h1>Choisis un nouveau mot de passe</h1>
+  <p class="auth-sub">Saisis ton nouveau mot de passe (au moins 6 caractères).</p>
+  <form method="post" class="auth-form">
+    <label>Nouveau mot de passe
+      <input type="password" name="password" required minlength="6" autocomplete="new-password">
+    </label>
+    <label>Confirme le mot de passe
+      <input type="password" name="password2" required minlength="6" autocomplete="new-password">
+    </label>
+    <button type="submit" class="btn btn-primary btn-lg">Mettre à jour</button>
+  </form>
+</div>
+{% endblock %}

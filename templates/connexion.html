@@ -14,6 +14,7 @@
     </label>
     <button type="submit" class="btn btn-primary btn-lg">Se connecter</button>
   </form>
+  <p class="auth-forgot"><a href="{{ url_for('mot_de_passe_oublie') }}">Mot de passe oublié ?</a></p>
   <p class="auth-switch">Pas encore de compte ? <a href="{{ url_for('inscription') }}">Créer un compte</a></p>
 </div>
 {% endblock %}

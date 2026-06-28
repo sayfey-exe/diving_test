@@ -12,6 +12,10 @@ Application web Flask permettant aux élèves Niveau 2 de réviser :
 """
 
 import os
+import ssl
+import smtplib
+import logging
+from email.message import EmailMessage
 
 from flask import (
     Flask, render_template, abort, request, jsonify, session,
@@ -22,6 +26,7 @@ from flask_login import (
 )
 from functools import wraps
 from sqlalchemy import func
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 from data.content import CHAPITRES, ASTUCES
 from data.questions import QUESTION_BANK, QUESTION_BY_ID
@@ -39,6 +44,19 @@ if db_url.startswith("postgres://"):  # compat anciens schémas Heroku/Render
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Journal de démarrage : indique clairement la base utilisée. Sur un hébergeur
+# au disque éphémère (ex. Render gratuit), SQLite est REMIS À ZÉRO à chaque
+# redémarrage → les comptes disparaissent. Il faut alors une base PostgreSQL.
+logging.basicConfig(level=logging.INFO)
+if db_url.startswith("sqlite"):
+    app.logger.warning(
+        "Base SQLITE utilisée (%s). En production sur disque éphémère, les "
+        "comptes seront perdus à chaque redémarrage : définis DATABASE_URL "
+        "vers une base PostgreSQL.", db_url,
+    )
+else:
+    app.logger.info("Base de données : %s", db_url.split("@")[-1])
 
 db.init_app(app)
 
@@ -58,6 +76,52 @@ ADMIN_EMAILS = {
 }
 
 CHAPITRE_BY_SLUG = {c["slug"]: c for c in CHAPITRES}
+
+# Envoi d'e-mails (réinitialisation de mot de passe). Configuré via variables
+# d'environnement ; si non configuré, le lien est journalisé côté serveur.
+MAIL_SERVER = os.environ.get("MAIL_SERVER")
+MAIL_PORT = int(os.environ.get("MAIL_PORT", "587"))
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+MAIL_SENDER = os.environ.get("MAIL_SENDER", MAIL_USERNAME or "no-reply@plongee-n2")
+MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", "").lower() in ("1", "true", "yes")
+
+reset_serializer = URLSafeTimedSerializer(app.secret_key, salt="password-reset")
+RESET_MAX_AGE = 3600  # 1 heure
+
+
+def mail_configured():
+    return bool(MAIL_SERVER and MAIL_USERNAME and MAIL_PASSWORD)
+
+
+def send_email(destinataire, sujet, corps):
+    """Envoie un e-mail. Retourne True si envoyé, False sinon (et journalise)."""
+    if not mail_configured():
+        app.logger.warning(
+            "E-mail non configuré (MAIL_SERVER/MAIL_USERNAME/MAIL_PASSWORD). "
+            "Message destiné à %s NON envoyé. Contenu :\n%s", destinataire, corps,
+        )
+        return False
+    msg = EmailMessage()
+    msg["Subject"] = sujet
+    msg["From"] = MAIL_SENDER
+    msg["To"] = destinataire
+    msg.set_content(corps)
+    try:
+        ctx = ssl.create_default_context()
+        if MAIL_USE_SSL:
+            with smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT, context=ctx) as s:
+                s.login(MAIL_USERNAME, MAIL_PASSWORD)
+                s.send_message(msg)
+        else:
+            with smtplib.SMTP(MAIL_SERVER, MAIL_PORT) as s:
+                s.starttls(context=ctx)
+                s.login(MAIL_USERNAME, MAIL_PASSWORD)
+                s.send_message(msg)
+        return True
+    except Exception as exc:  # noqa: BLE001 (on journalise toute erreur SMTP)
+        app.logger.error("Échec d'envoi d'e-mail à %s : %s", destinataire, exc)
+        return False
 
 
 @login_manager.user_loader
@@ -193,6 +257,71 @@ def connexion():
         flash("E-mail ou mot de passe incorrect.", "error")
         return render_template("connexion.html", email=email)
     return render_template("connexion.html")
+
+
+@app.route("/mot-de-passe-oublie", methods=["GET", "POST"])
+def mot_de_passe_oublie():
+    if current_user.is_authenticated:
+        return redirect(url_for("profil"))
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = reset_serializer.dumps(user.email)
+            lien = url_for("reinitialiser", token=token, _external=True)
+            corps = (
+                "Bonjour %s,\n\n"
+                "Tu as demandé à réinitialiser ton mot de passe sur Plongée N2.\n"
+                "Clique sur ce lien (valable 1 heure) pour choisir un nouveau "
+                "mot de passe :\n\n%s\n\n"
+                "Si tu n'es pas à l'origine de cette demande, ignore cet e-mail."
+                % (user.pseudo, lien)
+            )
+            envoye = send_email(
+                user.email,
+                "Réinitialisation de ton mot de passe — Plongée N2",
+                corps,
+            )
+            # En local (debug) sans SMTP configuré, on affiche le lien pour tester.
+            if not envoye and app.debug:
+                flash("E-mail non configuré (mode test) — lien de "
+                      "réinitialisation : %s" % lien, "success")
+        # Message neutre dans tous les cas (évite de révéler quels e-mails existent).
+        flash("Si un compte existe avec cet e-mail, un lien de réinitialisation "
+              "vient d'être envoyé.", "success")
+        return redirect(url_for("connexion"))
+    return render_template("mot_de_passe_oublie.html")
+
+
+@app.route("/reinitialiser/<token>", methods=["GET", "POST"])
+def reinitialiser(token):
+    try:
+        email = reset_serializer.loads(token, max_age=RESET_MAX_AGE)
+    except SignatureExpired:
+        flash("Ce lien de réinitialisation a expiré. Refais une demande.", "error")
+        return redirect(url_for("mot_de_passe_oublie"))
+    except BadSignature:
+        flash("Lien de réinitialisation invalide.", "error")
+        return redirect(url_for("mot_de_passe_oublie"))
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        flash("Compte introuvable.", "error")
+        return redirect(url_for("connexion"))
+
+    if request.method == "POST":
+        password = request.form.get("password") or ""
+        password2 = request.form.get("password2") or ""
+        if len(password) < 6:
+            flash("Le mot de passe doit faire au moins 6 caractères.", "error")
+        elif password != password2:
+            flash("Les deux mots de passe ne correspondent pas.", "error")
+        else:
+            user.set_password(password)
+            db.session.commit()
+            flash("Mot de passe mis à jour ! Tu peux te connecter.", "success")
+            return redirect(url_for("connexion"))
+    return render_template("reinitialiser.html", token=token)
 
 
 @app.route("/deconnexion")

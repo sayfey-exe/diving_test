@@ -154,6 +154,33 @@ Sur Render : onglet **Environment** du service web → ajoute la variable
 dans la barre de navigation pour ces comptes. Aucune migration de base n'est
 nécessaire (le statut admin est déterminé par l'e-mail, pas stocké en base).
 
+### Réinitialisation de mot de passe (envoi d'e-mail)
+
+La page **« Mot de passe oublié ? »** envoie un **lien de réinitialisation**
+(valable 1 h) à l'adresse du compte. Les mots de passe étant *hachés*, ils ne
+sont jamais renvoyés en clair : on choisit un nouveau mot de passe via le lien.
+
+L'envoi d'e-mail se configure avec des variables d'environnement SMTP :
+
+| Variable        | Exemple                    | Rôle                              |
+|-----------------|----------------------------|-----------------------------------|
+| `MAIL_SERVER`   | `smtp.gmail.com`           | serveur SMTP                      |
+| `MAIL_PORT`     | `587`                      | port (587 = TLS, 465 = SSL)       |
+| `MAIL_USERNAME` | `ton.email@gmail.com`      | identifiant SMTP                  |
+| `MAIL_PASSWORD` | *(mot de passe d'application)* | mot de passe SMTP             |
+| `MAIL_SENDER`   | `Plongée N2 <…@gmail.com>` | expéditeur affiché (optionnel)    |
+| `MAIL_USE_SSL`  | `false`                    | `true` pour le port 465           |
+
+> Avec Gmail, crée un **« mot de passe d'application »** (compte Google →
+> Sécurité → validation en 2 étapes) plutôt que ton mot de passe principal.
+> Sans ces variables, l'e-mail n'est pas envoyé ; en local (mode debug), le
+> lien de réinitialisation s'affiche directement à l'écran pour tester.
+
+> ℹ️ **Rappel important** : si « l'application ne se souvient plus des comptes »,
+> c'est presque toujours que la base **SQLite éphémère** est utilisée en
+> production (voir l'avertissement au démarrage dans les logs). Branche une base
+> **PostgreSQL** via `DATABASE_URL` pour que les comptes persistent.
+
 ## Déploiement en ligne (gratuit)
 
 L'application est prête pour la production : elle se lance avec le serveur
