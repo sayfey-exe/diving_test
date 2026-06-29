@@ -61,17 +61,28 @@
   }
 
   // ---------------------------------------------------------------- Rendu question
+  function isAnswered(q) {
+    var a = answers[q.id];
+    if (q.multi) return Array.isArray(a) && a.length > 0;
+    return a !== undefined && a !== null;
+  }
+
   function renderQuestion() {
     var q = QUESTIONS[current];
+    var multi = !!q.multi;
     var chosen = answers[q.id];
+    var chosenArr = multi ? (Array.isArray(chosen) ? chosen : []) : null;
 
     var html = '<div class="q-card">' +
-      '<p class="q-chapter">' + escapeHtml(q.chapitre_titre) + '</p>' +
+      '<p class="q-chapter">' + escapeHtml(q.chapitre_titre) +
+        (multi ? ' <span class="q-multi-badge">choix multiples</span>' : '') + '</p>' +
       '<h2>' + escapeHtml(q.q) + '</h2>' +
+      (multi ? '<p class="q-multi-hint">☑ Plusieurs réponses possibles : coche toutes les bonnes.</p>' : '') +
       '<div class="q-options">';
     q.options.forEach(function (opt, i) {
-      var sel = (chosen === i) ? " selected" : "";
-      html += '<button type="button" class="q-opt' + sel + '" data-index="' + i + '">' +
+      var isSel = multi ? (chosenArr.indexOf(i) !== -1) : (chosen === i);
+      html += '<button type="button" class="q-opt' + (isSel ? ' selected' : '') +
+        (multi ? ' q-opt-multi' : '') + '" data-index="' + i + '">' +
         '<span class="letter">' + LETTERS[i] + '</span>' +
         '<span>' + escapeHtml(opt) + '</span></button>';
     });
@@ -80,9 +91,18 @@
 
     elQZone.querySelectorAll(".q-opt").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        answers[q.id] = parseInt(btn.dataset.index, 10);
-        elQZone.querySelectorAll(".q-opt").forEach(function (b) { b.classList.remove("selected"); });
-        btn.classList.add("selected");
+        var i = parseInt(btn.dataset.index, 10);
+        if (multi) {
+          var arr = Array.isArray(answers[q.id]) ? answers[q.id] : [];
+          var p = arr.indexOf(i);
+          if (p === -1) arr.push(i); else arr.splice(p, 1);
+          answers[q.id] = arr;
+          btn.classList.toggle("selected");
+        } else {
+          answers[q.id] = i;
+          elQZone.querySelectorAll(".q-opt").forEach(function (b) { b.classList.remove("selected"); });
+          btn.classList.add("selected");
+        }
         updateDots();
         updateControls();
       });
@@ -116,7 +136,7 @@
   function updateDots() {
     var dots = elDots.children;
     for (var i = 0; i < dots.length; i++) {
-      dots[i].classList.toggle("answered", answers[QUESTIONS[i].id] !== undefined);
+      dots[i].classList.toggle("answered", isAnswered(QUESTIONS[i]));
       dots[i].classList.toggle("current", i === current);
     }
   }
@@ -130,7 +150,8 @@
   btnFinish.addEventListener("click", function () { confirmAndSubmit(); });
 
   function confirmAndSubmit() {
-    var nbRep = Object.keys(answers).length;
+    var nbRep = 0;
+    QUESTIONS.forEach(function (q) { if (isAnswered(q)) nbRep++; });
     var manquantes = QUESTIONS.length - nbRep;
     var msg = manquantes > 0
       ? "Il te reste " + manquantes + " question(s) sans réponse. Terminer quand même ?"
@@ -278,16 +299,19 @@
     var cls = d.juste ? "ok" : "ko";
     var tag = d.juste ? '<span class="corr-tag ok">✓ Juste</span>'
                       : '<span class="corr-tag ko">✗ Faux</span>';
+    var multiBadge = d.multi ? ' <span class="q-multi-badge">choix multiples</span>' : '';
     var html = '<div class="corr-item ' + cls + '">' +
-      '<p class="corr-q">' + (idx + 1) + '. ' + escapeHtml(d.q) + tag + '</p>';
+      '<p class="corr-q">' + (idx + 1) + '. ' + escapeHtml(d.q) + multiBadge + tag + '</p>';
+    var corrects = d.corrects || [];
+    var choix = d.choix || [];
     d.options.forEach(function (opt, i) {
-      var oc = "";
-      if (i === d.correct) oc = " right";
-      else if (i === d.choix) oc = " chosen-wrong";
-      var mark = (i === d.correct) ? "✔ " : ((i === d.choix) ? "✗ " : "");
+      var isCorrect = corrects.indexOf(i) !== -1;
+      var isChosen = choix.indexOf(i) !== -1;
+      var oc = isCorrect ? " right" : (isChosen ? " chosen-wrong" : "");
+      var mark = isCorrect ? "✔ " : (isChosen ? "✗ " : "");
       html += '<div class="corr-opt' + oc + '">' + mark + escapeHtml(opt) + '</div>';
     });
-    if (d.choix === null || d.choix === undefined) {
+    if (!choix.length) {
       html += '<div class="corr-opt chosen-wrong">— Pas de réponse</div>';
     }
     html += '<div class="corr-expl">💡 ' + escapeHtml(d.explication) +

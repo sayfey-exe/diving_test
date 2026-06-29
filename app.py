@@ -493,44 +493,65 @@ def _leaderboard():
 import random  # noqa: E402  (après config pour rester lisible)
 
 
-def _tirer_questions(n):
-    """Tire n questions distinctes en équilibrant les thèmes (chapitres).
+RATIO_MULTI = 0.25  # au moins 1/4 de questions à choix multiples par test
 
-    On répartit le tirage en rotation sur les chapitres pour qu'un même test
-    couvre un large éventail de thèmes plutôt que d'être dominé par les
-    chapitres riches en questions de calcul.
-    """
-    n = min(n, len(QUESTION_BANK))
+
+def _balanced_pick(pool, k):
+    """Choisit k questions du pool en rotation sur les chapitres (diversité)."""
+    if k <= 0 or not pool:
+        return []
     par_chap = {}
-    for q in QUESTION_BANK:
+    for q in pool:
         par_chap.setdefault(q["chapitre"], []).append(q)
     for lst in par_chap.values():
         random.shuffle(lst)
     chapitres = list(par_chap.keys())
     random.shuffle(chapitres)
-
     chosen, pos = [], {c: 0 for c in chapitres}
     progressed = True
-    while len(chosen) < n and progressed:
+    while len(chosen) < k and progressed:
         progressed = False
         for c in chapitres:
             if pos[c] < len(par_chap[c]):
                 chosen.append(par_chap[c][pos[c]])
                 pos[c] += 1
                 progressed = True
-                if len(chosen) >= n:
+                if len(chosen) >= k:
                     break
-    random.shuffle(chosen)  # mélange l'ordre final des thèmes
     return chosen
 
 
+def _tirer_questions(n):
+    """Tire n questions distinctes : thèmes équilibrés et au moins 1/4 de QCM
+    à choix multiples (plusieurs bonnes réponses)."""
+    n = min(n, len(QUESTION_BANK))
+    multi_pool = [q for q in QUESTION_BANK if q["multi"]]
+    single_pool = [q for q in QUESTION_BANK if not q["multi"]]
+
+    quota_multi = min(len(multi_pool), -(-n // 4))  # arrondi supérieur de n/4
+    chosen = _balanced_pick(multi_pool, quota_multi)
+    chosen += _balanced_pick(single_pool, n - len(chosen))
+
+    # Filet de sécurité si une catégorie manque de questions.
+    if len(chosen) < n:
+        used = {q["id"] for q in chosen}
+        reste = [q for q in QUESTION_BANK if q["id"] not in used]
+        random.shuffle(reste)
+        chosen += reste[: n - len(chosen)]
+
+    random.shuffle(chosen)  # mélange l'ordre final (thèmes et types)
+    return chosen[:n]
+
+
 def _questions_pour_client(questions):
+    # On envoie le type (multi) mais jamais les bonnes réponses.
     return [
         {
             "id": q["id"],
             "q": q["q"],
             "options": q["options"],
             "chapitre_titre": q["chapitre_titre"],
+            "multi": q["multi"],
         }
         for q in questions
     ]
@@ -571,12 +592,25 @@ def test_submit(mode):
         q = QUESTION_BY_ID.get(qid)
         if not q:
             continue
-        choix = reponses.get(qid)
-        try:
-            choix = int(choix)
-        except (TypeError, ValueError):
-            choix = None
-        juste = (choix == q["correct"])
+        # La réponse peut être un entier (réponse unique) ou une liste (multi).
+        raw = reponses.get(qid)
+        if isinstance(raw, (list, tuple)):
+            choix = set()
+            for x in raw:
+                try:
+                    choix.add(int(x))
+                except (TypeError, ValueError):
+                    pass
+        elif raw is None or raw == "":
+            choix = set()
+        else:
+            try:
+                choix = {int(raw)}
+            except (TypeError, ValueError):
+                choix = set()
+
+        corrects = set(q["corrects"])
+        juste = (choix == corrects)
         if juste:
             score += 1
 
@@ -590,13 +624,14 @@ def test_submit(mode):
             "id": qid,
             "q": q["q"],
             "options": q["options"],
-            "choix": choix,
+            "choix": sorted(choix),
+            "multi": q["multi"],
             "juste": juste,
             "chapitre_titre": q["chapitre_titre"],
             "chapitre_slug": q["chapitre_slug"],
         }
         if mode == "blanc":
-            detail["correct"] = q["correct"]
+            detail["corrects"] = q["corrects"]
             detail["explication"] = q["explication"]
         details.append(detail)
 

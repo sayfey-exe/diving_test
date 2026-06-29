@@ -247,6 +247,11 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .q-opt.selected { border-color: var(--primary); background: #eaf5fc; font-weight: 700; }
 .q-opt .letter { background: var(--surface-soft); border-radius: 8px; width: 1.8rem; height: 1.8rem; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary-dark); }
 .q-opt.selected .letter { background: var(--primary); color: #fff; }
+/* Choix multiples : cases plus "carrées" pour suggérer des cases à cocher */
+.q-opt-multi .letter { border-radius: 5px; }
+.q-opt-multi.selected .letter::after { content: ""; }
+.q-multi-badge { display: inline-block; background: #e7e2ff; color: #5b3fb0; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; padding: 0.1rem 0.5rem; border-radius: 999px; vertical-align: middle; }
+.q-multi-hint { color: #5b3fb0; font-weight: 700; font-size: 0.92rem; margin: 0.2rem 0 0; }
 
 .test-controls { display: flex; justify-content: space-between; margin-top: 1.6rem; gap: 0.6rem; }
 .test-controls-right { display: flex; gap: 0.6rem; }

@@ -813,6 +813,191 @@ FACTUELLES = [
 
 
 # ===========================================================================
+# Questions à CHOIX MULTIPLES (plusieurs bonnes réponses) — clé "corrects"
+# ===========================================================================
+MULTI = [
+    # --- 1. Pression
+    {"chapitre": 1, "q": "Parmi ces affirmations sur la pression, lesquelles sont exactes ?",
+     "options": ["Pabs = Patm + Phyd", "La pression hydrostatique augmente de 1 bar tous les 10 m",
+                 "La pression atmosphérique vaut 0 bar en surface", "À 20 m, la Pabs vaut 3 bar"],
+     "corrects": [0, 1, 3],
+     "explication": "La Patm vaut 1 bar (pas 0) en surface ; les autres affirmations sont exactes."},
+    {"chapitre": 1, "q": "Quelles grandeurs composent la pression absolue ?",
+     "options": ["la pression atmosphérique", "la pression hydrostatique",
+                 "la pression partielle d'oxygène", "la poussée d'Archimède"],
+     "corrects": [0, 1],
+     "explication": "Pabs = pression atmosphérique + pression hydrostatique."},
+    # --- 2. Archimède
+    {"chapitre": 2, "q": "Quelles affirmations sur Archimède sont correctes ?",
+     "options": ["Poids apparent = poids réel − poussée", "La poussée est constante avec la profondeur",
+                 "Flottabilité positive → l'objet coule", "1 L d'eau déplacé ≈ 1 kg de poussée"],
+     "corrects": [0, 1, 3],
+     "explication": "Flottabilité positive → l'objet REMONTE (poids apparent < 0)."},
+    {"chapitre": 2, "q": "Un objet a une flottabilité négative. Lesquelles sont vraies ?",
+     "options": ["il coule", "son poids apparent est positif", "il remonte", "son poids apparent est nul"],
+     "corrects": [0, 1],
+     "explication": "Flottabilité négative ↔ poids apparent > 0 ↔ l'objet coule."},
+    # --- 3. Boyle-Mariotte
+    {"chapitre": 3, "q": "Concernant la loi de Boyle-Mariotte, lesquelles sont vraies ?",
+     "options": ["P × V est constant (à T constante)", "le volume augmente à la remontée",
+                 "les variations de volume sont maximales près de la surface",
+                 "le volume augmente quand la pression augmente"],
+     "corrects": [0, 1, 2],
+     "explication": "Quand la pression augmente, le volume DIMINUE (inversement proportionnels)."},
+    # --- 4. Autonomie
+    {"chapitre": 4, "q": "Pour un calcul d'autonomie, de quoi a-t-on besoin ?",
+     "options": ["le volume du bloc", "la pression du bloc", "la profondeur et la consommation",
+                 "la température de l'eau"],
+     "corrects": [0, 1, 2],
+     "explication": "Volume, pression, profondeur et consommation suffisent."},
+    {"chapitre": 4, "q": "Quelles étapes interviennent dans le calcul d'autonomie ?",
+     "options": ["calculer l'air consommable", "tenir compte de la réserve",
+                 "multiplier la consommation par la pression absolue", "ignorer la profondeur"],
+     "corrects": [0, 1, 2],
+     "explication": "On garde la réserve et on tient compte de la profondeur (× Pabs)."},
+    # --- 5. Barotraumatismes
+    {"chapitre": 5, "q": "Quels barotraumatismes peuvent survenir à la remontée ?",
+     "options": ["les dents", "l'estomac et les intestins", "le plaquage du masque",
+                 "la surpression pulmonaire"],
+     "corrects": [0, 1, 3],
+     "explication": "Le plaquage du masque ne survient qu'à la descente."},
+    {"chapitre": 5, "q": "Quels accidents peuvent survenir à la descente ?",
+     "options": ["le plaquage du masque", "les oreilles", "les sinus", "la surpression pulmonaire"],
+     "corrects": [0, 1, 2],
+     "explication": "La surpression pulmonaire est un accident de remontée."},
+    {"chapitre": 5, "q": "Comment prévenir la surpression pulmonaire ?",
+     "options": ["expirer à la remontée", "ne jamais bloquer sa respiration",
+                 "faire un Valsalva à la remontée", "être prudent lors des remontées à 2 sur un embout"],
+     "corrects": [0, 1, 3],
+     "explication": "Pas de Valsalva à la remontée : il faut expirer et ne pas bloquer son air."},
+    # --- 6. Henry
+    {"chapitre": 6, "q": "Quels facteurs influencent la dissolution des gaz dans le corps ?",
+     "options": ["la pression", "le temps", "l'agitation du plongeur", "la couleur de la combinaison"],
+     "corrects": [0, 1, 2],
+     "explication": "Pression, temps, agitation, température… influencent la dissolution."},
+    {"chapitre": 6, "q": "À propos des états de dissolution, lesquels sont corrects ?",
+     "options": ["descente = sous-saturation (P > T)", "remontée = sur-saturation (P < T)",
+                 "saturation : P = T", "remontée : P > T"],
+     "corrects": [0, 1, 2],
+     "explication": "À la remontée, P < T (sur-saturation)."},
+    # --- 7. ADD
+    {"chapitre": 7, "q": "Lesquels sont des types/symptômes d'accident de décompression ?",
+     "options": ["les puces", "les moutons", "les accidents neurologiques", "le plaquage du masque"],
+     "corrects": [0, 1, 2],
+     "explication": "Le plaquage du masque est un barotraumatisme, pas un ADD."},
+    {"chapitre": 7, "q": "Que comprend le traitement d'un ADD ?",
+     "options": ["oxygène à 100 %", "aspirine 0,5 g", "faire boire", "faire redescendre la victime"],
+     "corrects": [0, 1, 2],
+     "explication": "On ne fait pas redescendre la victime : O2, aspirine, boire, caisson."},
+    {"chapitre": 7, "q": "Quels facteurs favorisent un ADD ?",
+     "options": ["le froid", "l'effort", "la fatigue", "le repos et le calme"],
+     "corrects": [0, 1, 2],
+     "explication": "Froid, effort, fatigue, anxiété, hypoglycémie favorisent l'ADD."},
+    {"chapitre": 7, "q": "Quelles mesures préviennent l'ADD ?",
+     "options": ["respecter la vitesse de remontée", "respecter les paliers",
+                 "pas d'avion pendant 12 à 24 h", "faire une apnée juste après la plongée"],
+     "corrects": [0, 1, 2],
+     "explication": "Pas d'apnée ni d'effort après la plongée."},
+    # --- 8. Dalton
+    {"chapitre": 8, "q": "Concernant la loi de Dalton, lesquelles sont vraies ?",
+     "options": ["Ptotale = somme des pressions partielles", "Ppa = Ptotale × pourcentage du gaz",
+                 "l'air ≈ 20 % O2 et 80 % N2", "la pression partielle diminue avec la profondeur"],
+     "corrects": [0, 1, 2],
+     "explication": "La pression partielle AUGMENTE avec la profondeur."},
+    # --- 9. Toxicité des gaz
+    {"chapitre": 9, "q": "Quels sont des symptômes d'essoufflement ?",
+     "options": ["accélération du rythme ventilatoire", "maux de tête", "palpitations",
+                 "sensation de pleine forme"],
+     "corrects": [0, 1, 2],
+     "explication": "Essoufflement : accélération ventilatoire, maux de tête, palpitations, panique…"},
+    {"chapitre": 9, "q": "Quelles peuvent être des causes d'essoufflement ?",
+     "options": ["l'effort", "le froid", "un matériel mal adapté", "une excellente technique de palmage"],
+     "corrects": [0, 1, 2],
+     "explication": "Effort, froid, émotion, matériel défectueux, profondeur… favorisent l'essoufflement."},
+    {"chapitre": 9, "q": "À propos de la narcose, lesquelles sont vraies ?",
+     "options": ["elle est due à l'azote", "elle apparaît souvent dès 40 m",
+                 "elle se traite en remontant", "elle laisse des séquelles définitives"],
+     "corrects": [0, 1, 2],
+     "explication": "Les symptômes disparaissent en remontant, sans séquelle."},
+    # --- 10. Noyade
+    {"chapitre": 10, "q": "Quelle est la conduite à tenir face à une noyade ?",
+     "options": ["extraire du milieu", "maintenir le détendeur en bouche", "appeler les secours",
+                 "laisser la victime dans l'eau"],
+     "corrects": [0, 1, 2],
+     "explication": "On extrait la victime (détendeur en bouche) et on alerte les secours."},
+    # --- 11. Tables MN90 (1)
+    {"chapitre": 11, "q": "Quelles sont des conditions d'utilisation des tables MN90 ?",
+     "options": ["plongées à l'air", "2 plongées maximum par 24 h", "profondeur maxi 60 m",
+                 "plongées au Nitrox"],
+     "corrects": [0, 1, 2],
+     "explication": "Les MN90 sont prévues pour des plongées à l'air."},
+    {"chapitre": 11, "q": "Concernant les vitesses et paliers MN90 :",
+     "options": ["15 m/min à la remontée", "6 m/min entre les paliers", "paliers de 3 en 3 m",
+                 "interpolation autorisée"],
+     "corrects": [0, 1, 2],
+     "explication": "L'interpolation est interdite : on prend la valeur supérieure."},
+    {"chapitre": 11, "q": "Quels cas particuliers la table MN90 permet-elle de gérer ?",
+     "options": ["la remontée lente", "la remontée rapide", "le palier interrompu",
+                 "le palier anticipé à 1 m"],
+     "corrects": [0, 1, 2],
+     "explication": "Remontée lente, remontée rapide et palier interrompu ont des procédures."},
+    # --- 12. Tables MN90 (2)
+    {"chapitre": 12, "q": "Pour une plongée successive (15 min ≤ IS < 12 h), il faut :",
+     "options": ["calculer l'azote résiduel (tableau 1)", "calculer la majoration (tableau 2)",
+                 "ajouter la majoration à la durée de plongée",
+                 "compter la majoration dans l'heure de sortie"],
+     "corrects": [0, 1, 2],
+     "explication": "Piège : la majoration ne compte pas dans l'heure de sortie."},
+    {"chapitre": 12, "q": "Concernant les plongées consécutives (IS < 15 min) :",
+     "options": ["on prend la profondeur max des deux plongées", "DP = somme des deux durées",
+                 "on traite comme une seule plongée", "on calcule une majoration"],
+     "corrects": [0, 1, 2],
+     "explication": "Pas de majoration : on additionne les durées et on prend la profondeur max."},
+    # --- 13. Réglementation
+    {"chapitre": 13, "q": "Quelles sont des conditions pour passer le Niveau 2 ?",
+     "options": ["être titulaire du N1 (ou équivalent)", "avoir une licence FFESSM valide",
+                 "avoir 18 ans obligatoirement", "avoir un certificat médical de moins d'un an"],
+     "corrects": [0, 1, 3],
+     "explication": "L'âge minimum est 16 ans (pas 18)."},
+    {"chapitre": 13, "q": "Quel équipement est requis pour plonger en autonomie ?",
+     "options": ["un gilet stabilisateur", "un moyen de contrôle (ordinateur ou tables)",
+                 "un octopus ou 2 détendeurs", "un fusil de chasse sous-marine"],
+     "corrects": [0, 1, 2],
+     "explication": "Gilet, moyen de contrôle et de quoi donner de l'air sans échange d'embout."},
+    {"chapitre": 13, "q": "Quels diplômes/qualifications sont accessibles après le N2 ?",
+     "options": ["Niveau 3", "Plongeur Nitrox", "Initiateur", "Niveau 4 (encadrement)"],
+     "corrects": [0, 1, 2],
+     "explication": "Le Niveau 4 n'est plus accessible après le N2 depuis septembre 2011."},
+    # --- 14. Comportement et sécurité
+    {"chapitre": 14, "q": "Avant la plongée, que doit-on faire ?",
+     "options": ["vérifier la pression du bloc", "vérifier le bon fonctionnement du matériel",
+                 "repérer l'équipement de sa palanquée", "ignorer le briefing du directeur de plongée"],
+     "corrects": [0, 1, 2],
+     "explication": "On écoute toujours le briefing du directeur de plongée."},
+    {"chapitre": 14, "q": "Dans quels cas ne faut-il PAS plonger ?",
+     "options": ["en cas de rhume", "si l'on n'est pas en forme", "si l'on n'a pas envie",
+                 "si l'eau est claire"],
+     "corrects": [0, 1, 2],
+     "explication": "Rhume, méforme ou absence d'envie : on ne plonge pas."},
+    # --- 15. Matériel
+    {"chapitre": 15, "q": "Un détendeur doit fournir de l'air :",
+     "options": ["à la pression ambiante", "sans effort", "à la demande",
+                 "en débit continu permanent"],
+     "corrects": [0, 1, 2],
+     "explication": "À la pression ambiante, sans effort et uniquement à la demande."},
+    {"chapitre": 15, "q": "Un gilet stabilisateur comporte :",
+     "options": ["au moins 2 mécanismes de gonflage", "au moins 3 purges", "un insufflateur",
+                 "un détendeur haute pression"],
+     "corrects": [0, 1, 2],
+     "explication": "2 mécanismes de gonflage (insufflateur + direct-system) et 3 purges minimum."},
+    {"chapitre": 15, "q": "Quels instruments servent à gérer ses paramètres de plongée ?",
+     "options": ["le timer", "l'ordinateur", "le profondimètre", "l'arbalète"],
+     "corrects": [0, 1, 2],
+     "explication": "Timer, ordinateur, profondimètre/montre : pour temps, profondeur, vitesse, paliers."},
+]
+
+
+# ===========================================================================
 # Générateurs de questions de CALCUL (réponses calculées → fiables)
 # ===========================================================================
 
@@ -1029,6 +1214,12 @@ _CHAP_BY_NUM = {c["num"]: c for c in CHAPITRES}
 
 def _attach(q, qid):
     chap = _CHAP_BY_NUM[q["chapitre"]]
+    if "corrects" in q:                       # question à choix multiples
+        multi = True
+        corrects = sorted(set(q["corrects"]))
+    else:                                      # question à réponse unique
+        multi = False
+        corrects = [q["correct"]]
     return {
         "id": qid,
         "chapitre": q["chapitre"],
@@ -1036,20 +1227,22 @@ def _attach(q, qid):
         "chapitre_slug": chap["slug"],
         "q": q["q"],
         "options": q["options"],
-        "correct": q["correct"],
+        "multi": multi,
+        "corrects": corrects,
         "explication": q["explication"],
     }
 
 
 def build_question_bank():
-    """Banque complète : fiches + supplémentaires + exercices + factuelles + calculs générés."""
+    """Banque complète : fiches + supplémentaires + exercices + factuelles + multi + calculs."""
     bank = []
     # 1) Questions des fiches de cours
     for chap in CHAPITRES:
         for i, q in enumerate(chap["questions"]):
             bank.append(_attach({**q, "chapitre": chap["num"]}, f"c{chap['num']}q{i}"))
-    # 2) Listes manuelles
-    for prefix, source in (("s", QUESTIONS_SUPP), ("e", EXERCICE_QUESTIONS), ("f", FACTUELLES)):
+    # 2) Listes manuelles (réponse unique + choix multiples)
+    for prefix, source in (("s", QUESTIONS_SUPP), ("e", EXERCICE_QUESTIONS),
+                           ("f", FACTUELLES), ("m", MULTI)):
         for i, q in enumerate(source):
             bank.append(_attach(q, f"{prefix}{i}"))
     # 3) Questions de calcul générées (id déjà unique)
@@ -1061,6 +1254,9 @@ def build_question_bank():
 QUESTION_BANK = build_question_bank()
 QUESTION_BY_ID = {q["id"]: q for q in QUESTION_BANK}
 
-# Garde-fou : la banque doit contenir au moins 400 questions.
+# Garde-fous : banque ≥ 400 questions, IDs uniques, et assez de questions à
+# choix multiples pour garantir le quota d'au moins 10 par test de 40.
 assert len(QUESTION_BANK) >= 400, "Banque insuffisante : %d questions" % len(QUESTION_BANK)
 assert len(QUESTION_BY_ID) == len(QUESTION_BANK), "IDs de questions dupliqués !"
+_NB_MULTI = sum(1 for q in QUESTION_BANK if q["multi"])
+assert _NB_MULTI >= 10, "Pas assez de questions à choix multiples : %d" % _NB_MULTI
