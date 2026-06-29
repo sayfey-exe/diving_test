@@ -1134,7 +1134,7 @@ CHAPITRES = [
 
 PASCAL = {
     "nom": "Pascal le Mérou",
-    "avatar_img": "pascal.png",   # image dans static/img/ (repli sur l'emoji si absente)
+    "avatar_img": "pascal-conseil.gif",   # GIF « il donne un conseil » (repli emoji si absent)
     "avatar_emoji": "🐟",
     "intro": "Salut, moi c'est Pascal le Mérou ! Voici mes points clés et mes pièges à "
              "éviter pour ce chapitre : tout l'essentiel à retenir, en un seul endroit. "

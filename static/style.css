@@ -203,7 +203,8 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .quiz-opt.is-wrong { border-color: var(--danger); background: #fdeaed; }
 .quiz-opt:disabled { cursor: default; }
 .quiz-feedback { margin-top: 0.7rem; font-size: 0.95rem; display: none; padding: 0.7rem 0.9rem; border-radius: 8px; }
-.quiz-feedback.show { display: block; }
+.quiz-feedback.show { display: flex; gap: 0.8rem; align-items: center; }
+.quiz-pascal { width: 62px; height: 62px; border-radius: 10px; flex: 0 0 auto; box-shadow: var(--shadow-sm); }
 .quiz-feedback.ok { background: #e6f7ef; color: #0c7a4f; }
 .quiz-feedback.ko { background: #fdeaed; color: #b21f37; }
 

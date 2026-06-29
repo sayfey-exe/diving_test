@@ -29,8 +29,15 @@
         });
 
         var ok = chosen === correct;
-        feedback.textContent = (ok ? "✅ Bonne réponse ! " : "❌ Raté. ") +
+        var img = document.createElement("img");
+        img.className = "quiz-pascal";
+        img.src = "/static/img/" + (ok ? "pascal-content.gif" : "pascal-pas-content.gif");
+        img.alt = ok ? "Pascal est content" : "Pascal n'est pas content";
+        var span = document.createElement("span");
+        span.textContent = (ok ? "✅ Bonne réponse ! " : "❌ Raté. ") +
           (feedback.dataset.explication || "");
+        feedback.appendChild(img);
+        feedback.appendChild(span);
         feedback.classList.add("show", ok ? "ok" : "ko");
       });
     });
