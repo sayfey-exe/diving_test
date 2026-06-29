@@ -53,29 +53,23 @@
     </section>
     {% endfor %}
 
-    <section class="essentiel">
-      <h2>⭐ L'essentiel à retenir</h2>
-      <ul>
-        {% for e in chap.essentiel %}<li>{{ e|safe }}</li>{% endfor %}
-      </ul>
-    </section>
-
     {% if hints %}
     <section class="pascal-hints">
       <div class="pascal-header">
-        <span class="pascal-avatar">{{ pascal.avatar }}</span>
+        <img class="pascal-avatar-img"
+             src="{{ url_for('static', filename='img/' ~ pascal.avatar_img) }}"
+             alt="{{ pascal.nom }}"
+             onerror="this.outerHTML='<span class=&quot;pascal-avatar&quot;>{{ pascal.avatar_emoji }}</span>';">
         <div>
           <strong>{{ pascal.nom }}</strong>
+          <span class="pascal-tagline">l'essentiel à retenir &amp; mes astuces</span>
           <p>{{ pascal.intro }}</p>
         </div>
       </div>
       {% for h in hints %}
       <details class="hint">
-        <summary><span class="hint-bulb">💡</span> Un conseil de Pascal</summary>
-        <div class="hint-body">
-          <span class="pascal-avatar-sm">{{ pascal.avatar }}</span>
-          <p>{{ h|safe }}</p>
-        </div>
+        <summary><span class="hint-bulb">💡</span> {{ h.titre }}</summary>
+        <div class="hint-body">{{ h.texte|safe }}</div>
       </details>
       {% endfor %}
     </section>

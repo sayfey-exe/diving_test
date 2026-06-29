@@ -365,6 +365,8 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .pascal-header { display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 0.9rem; }
 .pascal-avatar { font-size: 2.4rem; flex: 0 0 auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.12)); }
 .pascal-avatar-sm { font-size: 1.3rem; flex: 0 0 auto; }
+.pascal-avatar-img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; border: 3px solid #fff; box-shadow: var(--shadow-sm); background: #cfe6f5; }
+.pascal-tagline { display: inline-block; margin-left: 0.4rem; font-size: 0.78rem; font-weight: 700; color: var(--primary); background: #dcecf8; padding: 0.05rem 0.5rem; border-radius: 999px; vertical-align: middle; }
 .pascal-header strong { color: var(--primary-dark); font-size: 1.05rem; }
 .pascal-header p { margin: 0.2rem 0 0; color: var(--ink-soft); font-size: 0.92rem; }
 .hint { background: #fff; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.55rem; overflow: hidden; }
@@ -372,7 +374,7 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .hint summary::-webkit-details-marker { display: none; }
 .hint-bulb { font-size: 1.2rem; transition: transform .15s; }
 .hint[open] .hint-bulb { transform: scale(1.15) rotate(-8deg); }
-.hint-body { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0 0.9rem 0.9rem; }
+.hint-body { padding: 0.1rem 0.9rem 0.9rem; line-height: 1.65; color: var(--ink); }
 .hint-body p { margin: 0; }
 
 /* ---------- Commentaires sur les questions (test blanc) ---------- */

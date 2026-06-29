@@ -1134,86 +1134,143 @@ CHAPITRES = [
 
 PASCAL = {
     "nom": "Pascal le Mérou",
-    "avatar": "🐟",
-    "intro": "Salut, moi c'est Pascal le Mérou, ta mascotte ! Clique sur mes ampoules "
-             "💡 pour découvrir mes conseils de vieux poisson qui en a vu, des plongeurs.",
+    "avatar_img": "pascal.png",   # image dans static/img/ (repli sur l'emoji si absente)
+    "avatar_emoji": "🐟",
+    "intro": "Salut, moi c'est Pascal le Mérou ! Voici mes points clés et mes pièges à "
+             "éviter pour ce chapitre : tout l'essentiel à retenir, en un seul endroit. "
+             "Clique sur mes ampoules 💡.",
 }
 
+# Conseils de Pascal : chaque entrée FUSIONNE l'essentiel à retenir et l'astuce
+# (mémo, piège d'examen, application) — un seul point par idée, sans répétition.
 HINTS = {
     1: [
-        "Retiens juste <strong>Pabs = 1 + profondeur/10</strong> : avec ça tu réponds à presque "
-        "toutes les questions de pression !",
-        "Ne confonds pas pression <em>absolue</em> (avec l'atmosphère) et <em>hydrostatique</em> "
-        "(l'eau seule). L'absolue, c'est toujours 1 de plus.",
+        {"titre": "La formule magique de la pression",
+         "texte": "Retiens <strong>Pabs = 1 + profondeur/10</strong> : avec ça tu réponds à "
+                  "presque toutes les questions de pression. Ex : 20 m → 3 bar, 40 m → 5 bar."},
+        {"titre": "Absolue vs hydrostatique (le piège)",
+         "texte": "La pression <em>hydrostatique</em> (l'eau) augmente de 1 bar tous les 10 m. "
+                  "La pression <em>absolue</em>, c'est toujours <strong>1 de plus</strong> (on "
+                  "ajoute l'atmosphère). Beaucoup les confondent : pas toi !"},
     ],
     2: [
-        "Le truc à retenir : <strong>1 litre = 1 kg de poussée</strong>. Poids apparent = poids réel "
-        "− volume (en litres).",
-        "Poids apparent négatif → ça remonte ; positif → ça coule. Comme moi quand je me laisse "
-        "porter par le courant !",
+        {"titre": "Le poids apparent en un calcul",
+         "texte": "<strong>1 litre = 1 kg de poussée.</strong> Poids apparent = poids réel − "
+                  "volume (en litres). Négatif → ça remonte ; positif → ça coule ; nul → équilibre."},
+        {"titre": "Le piège du bloc qui se vide",
+         "texte": "La poussée d'Archimède est <strong>constante</strong> (indépendante de la "
+                  "profondeur). Mais en fin de plongée, ton bloc allégé te rend plus léger → "
+                  "flottabilité plus positive. Reste vigilant à la remontée."},
     ],
     3: [
-        "C'est près de la surface que l'air gonfle le plus vite : pense à purger ta bouée "
-        "<strong>doucement</strong> à la remontée.",
-        "P×V = constante : si tu doutes, écris l'égalité et remplace les valeurs, ça marche à "
-        "tous les coups.",
+        {"titre": "P × V = constante",
+         "texte": "Si tu doutes, écris <strong>P1×V1 = P2×V2</strong> et remplace : infaillible. "
+                  "Quand la pression augmente, le volume diminue."},
+        {"titre": "Le danger est près de la surface",
+         "texte": "Entre 10 m et 0 m, le volume <strong>double</strong> : c'est là que les "
+                  "barotraumatismes guettent. Purge ta bouée doucement et n'oublie jamais d'expirer "
+                  "à la remontée."},
     ],
     4: [
-        "Méthode infaillible : l'air <strong>consommable</strong> d'abord (sans la réserve !), puis "
-        "conso × profondeur, puis tu divises. Dans cet ordre, jamais d'erreur.",
-        "À 30 m tu respires <strong>4 fois plus vite</strong> qu'en surface. Oublie jamais de "
-        "multiplier par la pression absolue.",
+        {"titre": "La méthode d'autonomie sans erreur",
+         "texte": "Dans l'ordre : (1) air <strong>consommable</strong> = (pression − réserve) × "
+                  "volume, (2) conso à la profondeur = conso surface × Pabs, (3) temps = "
+                  "consommable ÷ conso. La réserve (50 bar) se retire toujours."},
+        {"titre": "×4 à 30 m",
+         "texte": "À 30 m tu respires <strong>4 fois plus vite</strong> qu'en surface (Pabs = 4). "
+                  "Multiplie toujours ta consommation par la pression absolue."},
     ],
     5: [
-        "Le seul barotraumatisme qui n'arrive QU'à la descente, c'est le <strong>plaquage de "
-        "masque</strong>. C'est un piège classique !",
-        "<strong>Jamais de Valsalva à la remontée.</strong> Si une réponse le propose, c'est faux, "
-        "à tous les coups.",
+        {"titre": "Descente ou remontée ?",
+         "texte": "Le seul accident qui n'arrive QU'à la descente, c'est le <strong>plaquage de "
+                  "masque</strong> (souffle par le nez). Dents, estomac et surpression pulmonaire : "
+                  "seulement à la remontée."},
+        {"titre": "Jamais de Valsalva à la remontée",
+         "texte": "Équilibre tes oreilles <strong>à la descente</strong>, sans forcer. À la "
+                  "remontée, surtout pas de Valsalva : si une réponse le propose, c'est faux."},
+        {"titre": "Surpression pulmonaire : la n°1 à éviter",
+         "texte": "Le plus grave… mais le plus facile à éviter : <strong>expire normalement</strong> "
+                  "à la remontée, ne bloque jamais ta respiration."},
     ],
     6: [
-        "Descente = l'azote entre (P&gt;T) ; remontée = il sort (P&lt;T). Et plus tu es "
-        "<strong>calme</strong>, moins tu te charges en azote.",
+        {"titre": "L'azote : il entre, il sort",
+         "texte": "Descente = l'azote se dissout (P&gt;T) ; remontée = il s'élimine (P&lt;T). Le gaz "
+                  "qui pose problème, c'est l'<strong>azote</strong>."},
+        {"titre": "Reste calme",
+         "texte": "Plus tu t'agites, plus tu dissous d'azote. Une plongée tranquille = moins de "
+                  "risque d'accident de décompression."},
     ],
     7: [
-        "Le traitement dans l'ordre : <strong>O2 à 100 %, aspirine 0,5 g, faire boire, caisson</strong>. "
-        "Apprends-le comme une comptine.",
-        "<strong>Pas d'avion avant 12 à 24 h</strong> après une plongée : ça tombe très souvent à l'examen.",
+        {"titre": "Le traitement comme une comptine",
+         "texte": "<strong>O2 à 100 %, aspirine 0,5 g, faire boire, caisson</strong> — et on alerte "
+                  "les secours. On ne re-plonge jamais pour « recomprimer »."},
+        {"titre": "Ça peut venir tard",
+         "texte": "La plupart des ADD se déclarent dans l'heure, mais c'est possible jusqu'à "
+                  "<strong>12 h après</strong>. Pas d'avion avant 12 à 24 h, pas d'effort ni "
+                  "d'apnée après la plongée."},
     ],
     8: [
-        "Pression partielle = <strong>pression totale × pourcentage</strong>. C'est tout ! "
-        "Souviens-toi : 20 % d'O2, 80 % d'azote.",
+        {"titre": "Pression partielle = Ptotale × %",
+         "texte": "Air = <strong>20 % O2, 80 % N2</strong>. Ppa = pression absolue × pourcentage. "
+                  "Ex : à 40 m (5 bar), PpN2 = 5 × 0,8 = 4 bar."},
     ],
     9: [
-        "Ne les confonds pas : essoufflement = trop de CO2 → on <strong>expire</strong> ; "
-        "narcose = trop d'azote → on <strong>remonte</strong>.",
+        {"titre": "Essoufflement vs narcose (à ne jamais confondre)",
+         "texte": "Essoufflement = trop de <strong>CO2</strong> → on EXPIRE et on s'arrête (à 40 m "
+                  "on remonte). Narcose = trop d'<strong>azote</strong> → on REMONTE et tout "
+                  "disparaît."},
     ],
     10: [
-        "Quoi qu'il arrive, le <strong>détendeur reste en bouche</strong> quand on remonte une victime.",
+        {"titre": "Le réflexe qui sauve",
+         "texte": "On remonte la victime en gardant le <strong>détendeur en bouche</strong>, on "
+                  "alerte les secours, on réchauffe et on rassure. La syncope des 7 m vient de "
+                  "l'hyperventilation en apnée."},
     ],
     11: [
-        "Lis deux fois l'énoncé, fais un <strong>schéma clair</strong>, et prends toujours la valeur "
-        "<strong>immédiatement supérieure</strong> si elle manque dans la table.",
-        "Vitesses à connaître par cœur : <strong>15 m/min</strong> à la remontée, <strong>6 m/min</strong> "
-        "entre les paliers.",
+        {"titre": "La méthode des tables",
+         "texte": "Lis deux fois l'énoncé, fais un <strong>schéma clair</strong>, et si une valeur "
+                  "manque, prends toujours la valeur <strong>immédiatement supérieure</strong> "
+                  "(jamais d'interpolation). La profondeur retenue = la plus profonde atteinte."},
+        {"titre": "Les vitesses à connaître par cœur",
+         "texte": "<strong>15 m/min</strong> jusqu'au 1er palier, <strong>6 m/min</strong> entre les "
+                  "paliers (plus lent). Paliers de 3 en 3 m ; palier de sécurité conseillé : "
+                  "3 min à 3 m."},
     ],
     12: [
-        "Le piège préféré des examinateurs : la <strong>majoration ne compte PAS</strong> pour "
-        "l'heure de sortie, seulement pour les paliers !",
-        "IS &lt; 15 min = <strong>consécutive</strong> ; entre 15 min et 12 h = <strong>successive</strong>. "
-        "Ne mélange pas tout.",
+        {"titre": "Le piège préféré des examinateurs",
+         "texte": "La <strong>majoration ne compte PAS</strong> pour l'heure de sortie, seulement "
+                  "pour calculer les paliers. Tableau 1 → azote résiduel ; tableau 2 → majoration."},
+        {"titre": "Consécutive ou successive ?",
+         "texte": "IS &lt; 15 min = <strong>consécutive</strong> (une seule plongée : durées "
+                  "additionnées, profondeur max). 15 min à 12 h = <strong>successive</strong> "
+                  "(majoration). Intervalle absent du tableau 1 → valeur <strong>inférieure</strong> "
+                  "(sécurité)."},
     ],
     13: [
-        "Apprends les chiffres clés : <strong>16 ans</strong>, licence <strong>15 mois</strong>, certificat "
-        "<strong>1 an</strong>, sinistre sous <strong>5 jours</strong>, autonomie <strong>20 m</strong> / "
-        "encadré <strong>40 m</strong>.",
+        {"titre": "Les chiffres à retenir",
+         "texte": "<strong>16 ans</strong>, licence <strong>15 mois</strong>, certificat médical "
+                  "<strong>1 an</strong>, sinistre déclaré sous <strong>5 jours</strong>, bloc "
+                  "ré-éprouvé si P×V &gt; 80 L."},
+        {"titre": "Tes prérogatives",
+         "texte": "Autonomie <strong>20 m</strong> entre N2, encadré jusqu'à <strong>40 m</strong>. "
+                  "Mais attention : l'autonomie n'est pas l'encadrement — un N2 n'encadre personne."},
     ],
     14: [
-        "Le doute profite toujours à la sécurité : enrhumé, fatigué ou pas envie → "
-        "<strong>on ne plonge pas</strong>. Tu es seul juge.",
+        {"titre": "Tu es seul juge",
+         "texte": "Enrhumé, fatigué ou pas envie → <strong>on ne plonge pas</strong>. Personne ne "
+                  "décide à ta place."},
+        {"titre": "Les bons réflexes",
+         "texte": "Vérifie que ta bouteille est ouverte : l'aiguille du manomètre ne bouge pas "
+                  "quand tu respires. Perte de palanquée : ~1 min de recherche, puis remontée lente."},
     ],
     15: [
-        "1er étage = HP vers <strong>moyenne pression</strong> ; 2e étage = à la demande. Et la bouée "
-        "ne compense <strong>jamais</strong> un sur-lestage !",
+        {"titre": "Le détendeur en 2 étages",
+         "texte": "1er étage = HP → <strong>moyenne pression</strong> ; 2e étage = air <strong>à la "
+                  "demande</strong>, à la pression ambiante. Rince-le à l'eau douce après chaque "
+                  "plongée."},
+        {"titre": "La bouée n'est pas du lestage",
+         "texte": "Le gilet sert à s'équilibrer, <strong>jamais</strong> à compenser un sur-lestage. "
+                  "Et l'ordinateur impose souvent une remontée plus lente (8–12 m/min) que les tables."},
     ],
 }
 
