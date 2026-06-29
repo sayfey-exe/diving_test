@@ -42,13 +42,13 @@ EXERCICES = {
     # ---------------------------------------------------------------- Ch2 Archimède
     2: [
         {
-            "titre": "Poids apparent d'une bouteille",
-            "enonce": "Une bouteille pèse 18 kg pour un volume de 13 L. Quel est son poids "
-                      "apparent dans l'eau de mer ? Coule-t-elle ?",
+            "titre": "Poids apparent d'un bloc",
+            "enonce": "Un bloc pèse 16 kg pour un volume de 12 L. Quel est son poids "
+                      "apparent dans l'eau de mer ? Coule-t-il ?",
             "correction": (
-                "Poussée d'Archimède = poids du volume d'eau déplacé = 13 kg "
-                "(13 L = 13 dm³). Poids apparent = 18 − 13 = <strong>5 kg</strong>. "
-                "Comme il est positif, <strong>la bouteille coule</strong>."
+                "Poussée d'Archimède = poids du volume d'eau déplacé = 12 kg "
+                "(12 L = 12 dm³). Poids apparent = 16 − 12 = <strong>4 kg</strong>. "
+                "Comme il est positif, <strong>le bloc coule</strong>."
             ),
         },
         {
@@ -67,11 +67,12 @@ EXERCICES = {
     3: [
         {
             "titre": "Volume d'air à la remontée",
-            "enonce": "À 30 m (4 bar), un plongeur gonfle sa bouée avec 2 L d'air. Il oublie "
+            "enonce": "À 20 m, un plongeur gonfle sa bouée avec 3 L d'air. Il oublie "
                       "de purger à la remontée. Quel volume cet air occupe-t-il en surface ?",
             "correction": (
-                "P1 × V1 = P2 × V2 → 4 × 2 = 1 × V2 → V2 = <strong>8 L</strong>. "
-                "L'air a quadruplé : d'où le risque de remontée incontrôlée si on ne purge pas."
+                "À 20 m, Pabs = 3 bar. P1 × V1 = P2 × V2 → 3 × 3 = 1 × V2 → "
+                "V2 = <strong>9 L</strong>. L'air a triplé : d'où le risque de remontée "
+                "incontrôlée si on ne purge pas."
             ),
         },
         {
@@ -113,13 +114,13 @@ EXERCICES = {
     # ---------------------------------------------------------------- Ch8 Dalton
     8: [
         {
-            "titre": "Pressions partielles à 30 m",
+            "titre": "Pressions partielles à 25 m",
             "enonce": "Pour de l'air (20 % O2, 80 % N2), calcule les pressions partielles "
-                      "d'oxygène et d'azote à 30 m.",
+                      "d'oxygène et d'azote à 25 m.",
             "correction": (
-                "À 30 m, Pabs = 4 bar.<br>"
-                "PpO2 = 4 × 0,20 = <strong>0,8 bar</strong>.<br>"
-                "PpN2 = 4 × 0,80 = <strong>3,2 bar</strong>."
+                "À 25 m, Pabs = 3,5 bar.<br>"
+                "PpO2 = 3,5 × 0,20 = <strong>0,7 bar</strong>.<br>"
+                "PpN2 = 3,5 × 0,80 = <strong>2,8 bar</strong>."
             ),
         },
         {

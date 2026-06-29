@@ -28,10 +28,10 @@ from functools import wraps
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
-from data.content import CHAPITRES, ASTUCES
+from data.content import CHAPITRES, HINTS, PASCAL
 from data.questions import QUESTION_BANK, QUESTION_BY_ID
 from data.exercices import EXERCICES, NOTE_TABLES
-from models import db, User, TestResult, ChapterStudy
+from models import db, User, TestResult, ChapterStudy, QuestionComment
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -191,12 +191,9 @@ def chapitre(slug):
         suivant=suivant,
         exercices=EXERCICES.get(chap["num"], []),
         note_tables=NOTE_TABLES,
+        hints=HINTS.get(chap["num"], []),
+        pascal=PASCAL,
     )
-
-
-@app.route("/astuces")
-def astuces():
-    return render_template("astuces.html", astuces=ASTUCES)
 
 
 # ---------------------------------------------------------------------------
@@ -409,7 +406,17 @@ def admin():
         "nb_tests": TestResult.query.count(),
         "global_avg": global_avg,
     }
-    return render_template("admin.html", rows=rows, totaux=totaux)
+    nb_comment = QuestionComment.query.count()
+    return render_template("admin.html", rows=rows, totaux=totaux, nb_comment=nb_comment)
+
+
+@app.route("/admin/commentaires")
+@admin_required
+def admin_commentaires():
+    comments = (
+        QuestionComment.query.order_by(QuestionComment.created_at.desc()).all()
+    )
+    return render_template("commentaires.html", comments=comments)
 
 
 # ---------------------------------------------------------------------------
@@ -598,6 +605,28 @@ def test_submit(mode):
 # ---------------------------------------------------------------------------
 # Divers
 # ---------------------------------------------------------------------------
+
+@app.route("/question/<qid>/commentaire", methods=["POST"])
+def commentaire_question(qid):
+    """Enregistre une remarque d'utilisateur sur une question (test blanc)."""
+    q = QUESTION_BY_ID.get(qid)
+    if not q:
+        return jsonify({"error": "Question inconnue."}), 404
+    data = request.get_json(silent=True) or {}
+    texte = (data.get("comment") or "").strip()
+    if not texte:
+        return jsonify({"error": "Commentaire vide."}), 400
+    texte = texte[:1000]
+    db.session.add(QuestionComment(
+        question_id=qid,
+        question_text=q["q"],
+        user_id=current_user.id if current_user.is_authenticated else None,
+        pseudo=current_user.pseudo if current_user.is_authenticated else "Anonyme",
+        comment=texte,
+    ))
+    db.session.commit()
+    return jsonify({"ok": True})
+
 
 @app.context_processor
 def inject_globals():

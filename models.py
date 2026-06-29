@@ -45,6 +45,19 @@ class TestResult(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class QuestionComment(db.Model):
+    """Remarque d'un utilisateur sur une question (pour améliorer la banque)."""
+    __tablename__ = "question_comments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    question_id = db.Column(db.String(40), nullable=False, index=True)
+    question_text = db.Column(db.Text)            # libellé au moment du commentaire
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    pseudo = db.Column(db.String(80))             # pseudo (ou « Anonyme »)
+    comment = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class ChapterStudy(db.Model):
     __tablename__ = "chapter_studies"
 

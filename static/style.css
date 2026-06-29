@@ -355,6 +355,33 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .exo[open] .exo-voir { color: var(--ink-soft); }
 .exo-correction { padding: 0 1.2rem 1.2rem; border-top: 1px dashed var(--border); margin-top: 0.2rem; padding-top: 0.9rem; line-height: 1.7; }
 
+/* ---------- Pascal le Mérou (conseils) ---------- */
+.pascal-hints { background: linear-gradient(120deg, #eef9ff, #e7f1fb); border: 1px solid #cfe6f5; border-radius: 14px; padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; }
+.pascal-header { display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 0.9rem; }
+.pascal-avatar { font-size: 2.4rem; flex: 0 0 auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.12)); }
+.pascal-avatar-sm { font-size: 1.3rem; flex: 0 0 auto; }
+.pascal-header strong { color: var(--primary-dark); font-size: 1.05rem; }
+.pascal-header p { margin: 0.2rem 0 0; color: var(--ink-soft); font-size: 0.92rem; }
+.hint { background: #fff; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.55rem; overflow: hidden; }
+.hint summary { cursor: pointer; padding: 0.65rem 0.9rem; font-weight: 700; color: var(--primary-dark); list-style: none; display: flex; align-items: center; gap: 0.5rem; }
+.hint summary::-webkit-details-marker { display: none; }
+.hint-bulb { font-size: 1.2rem; transition: transform .15s; }
+.hint[open] .hint-bulb { transform: scale(1.15) rotate(-8deg); }
+.hint-body { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0 0.9rem 0.9rem; }
+.hint-body p { margin: 0; }
+
+/* ---------- Commentaires sur les questions (test blanc) ---------- */
+.corr-comment { margin-top: 0.7rem; }
+.corr-comment summary { cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--ink-soft); list-style: none; }
+.corr-comment summary::-webkit-details-marker { display: none; }
+.corr-comment-box { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.corr-comment-box textarea { width: 100%; border: 2px solid var(--border); border-radius: 8px; padding: 0.6rem; font: inherit; resize: vertical; min-height: 60px; }
+.corr-comment-box textarea:focus { outline: none; border-color: var(--primary); }
+.corr-comment-actions { display: flex; gap: 0.6rem; align-items: center; }
+.comment-status { font-size: 0.88rem; font-weight: 700; }
+.comment-status.ok { color: var(--success); }
+.comment-status.err { color: var(--danger); }
+
 /* ---------- Navbar admin ---------- */
 .nav-admin { background: rgba(255,107,94,0.22); }
 .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.9rem; }
@@ -393,6 +420,17 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .admin-table { font-size: 0.9rem; }
 .admin-table td, .admin-table th { text-align: left; }
 .email-cell { color: var(--ink-soft); }
+.stat-box-link { text-decoration: none; color: var(--ink); transition: transform .12s, box-shadow .15s; }
+.stat-box-link:hover { transform: translateY(-3px); box-shadow: var(--shadow); color: var(--ink); }
+
+/* ---------- Liste des commentaires (admin) ---------- */
+.comments-list { display: grid; gap: 0.9rem; }
+.comment-card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 12px; padding: 1rem 1.2rem; box-shadow: var(--shadow-sm); }
+.comment-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 0.4rem; }
+.comment-author { font-weight: 800; color: var(--primary-dark); }
+.comment-qid code { background: var(--surface-soft); padding: 0.05rem 0.4rem; border-radius: 5px; }
+.comment-question { font-style: italic; color: var(--ink-soft); margin: 0 0 0.4rem; }
+.comment-body { margin: 0; white-space: pre-wrap; }
 
 /* ---------- Footer ---------- */
 .footer { background: var(--bg); color: #9fbdd6; padding: 1.4rem 0; font-size: 0.85rem; margin-top: auto; }

@@ -20,6 +20,10 @@
     <span class="stat-num">{{ totaux.global_avg if totaux.global_avg is not none else '—' }}{% if totaux.global_avg is not none %}/20{% endif %}</span>
     <span class="stat-label">Moyenne globale</span>
   </div>
+  <a class="stat-box stat-box-link" href="{{ url_for('admin_commentaires') }}">
+    <span class="stat-num">💬 {{ nb_comment }}</span>
+    <span class="stat-label">Remarques sur les questions</span>
+  </a>
 </section>
 
 <div class="table-wrap">

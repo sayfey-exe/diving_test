@@ -60,6 +60,27 @@
       </ul>
     </section>
 
+    {% if hints %}
+    <section class="pascal-hints">
+      <div class="pascal-header">
+        <span class="pascal-avatar">{{ pascal.avatar }}</span>
+        <div>
+          <strong>{{ pascal.nom }}</strong>
+          <p>{{ pascal.intro }}</p>
+        </div>
+      </div>
+      {% for h in hints %}
+      <details class="hint">
+        <summary><span class="hint-bulb">💡</span> Un conseil de Pascal</summary>
+        <div class="hint-body">
+          <span class="pascal-avatar-sm">{{ pascal.avatar }}</span>
+          <p>{{ h|safe }}</p>
+        </div>
+      </details>
+      {% endfor %}
+    </section>
+    {% endif %}
+
     {% if exercices %}
     <section class="exercices">
       <h2>✏️ Exercices</h2>

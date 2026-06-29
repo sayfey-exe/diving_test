@@ -1127,6 +1127,99 @@ CHAPITRES = [
 # Astuces / conseils pour réussir l'examen
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Les conseils de Pascal le Mérou (mascotte) — affichés derrière une ampoule
+# 💡 dans chaque fiche de cours. Clé = numéro de chapitre.
+# ---------------------------------------------------------------------------
+
+PASCAL = {
+    "nom": "Pascal le Mérou",
+    "avatar": "🐟",
+    "intro": "Salut, moi c'est Pascal le Mérou, ta mascotte ! Clique sur mes ampoules "
+             "💡 pour découvrir mes conseils de vieux poisson qui en a vu, des plongeurs.",
+}
+
+HINTS = {
+    1: [
+        "Retiens juste <strong>Pabs = 1 + profondeur/10</strong> : avec ça tu réponds à presque "
+        "toutes les questions de pression !",
+        "Ne confonds pas pression <em>absolue</em> (avec l'atmosphère) et <em>hydrostatique</em> "
+        "(l'eau seule). L'absolue, c'est toujours 1 de plus.",
+    ],
+    2: [
+        "Le truc à retenir : <strong>1 litre = 1 kg de poussée</strong>. Poids apparent = poids réel "
+        "− volume (en litres).",
+        "Poids apparent négatif → ça remonte ; positif → ça coule. Comme moi quand je me laisse "
+        "porter par le courant !",
+    ],
+    3: [
+        "C'est près de la surface que l'air gonfle le plus vite : pense à purger ta bouée "
+        "<strong>doucement</strong> à la remontée.",
+        "P×V = constante : si tu doutes, écris l'égalité et remplace les valeurs, ça marche à "
+        "tous les coups.",
+    ],
+    4: [
+        "Méthode infaillible : l'air <strong>consommable</strong> d'abord (sans la réserve !), puis "
+        "conso × profondeur, puis tu divises. Dans cet ordre, jamais d'erreur.",
+        "À 30 m tu respires <strong>4 fois plus vite</strong> qu'en surface. Oublie jamais de "
+        "multiplier par la pression absolue.",
+    ],
+    5: [
+        "Le seul barotraumatisme qui n'arrive QU'à la descente, c'est le <strong>plaquage de "
+        "masque</strong>. C'est un piège classique !",
+        "<strong>Jamais de Valsalva à la remontée.</strong> Si une réponse le propose, c'est faux, "
+        "à tous les coups.",
+    ],
+    6: [
+        "Descente = l'azote entre (P&gt;T) ; remontée = il sort (P&lt;T). Et plus tu es "
+        "<strong>calme</strong>, moins tu te charges en azote.",
+    ],
+    7: [
+        "Le traitement dans l'ordre : <strong>O2 à 100 %, aspirine 0,5 g, faire boire, caisson</strong>. "
+        "Apprends-le comme une comptine.",
+        "<strong>Pas d'avion avant 12 à 24 h</strong> après une plongée : ça tombe très souvent à l'examen.",
+    ],
+    8: [
+        "Pression partielle = <strong>pression totale × pourcentage</strong>. C'est tout ! "
+        "Souviens-toi : 20 % d'O2, 80 % d'azote.",
+    ],
+    9: [
+        "Ne les confonds pas : essoufflement = trop de CO2 → on <strong>expire</strong> ; "
+        "narcose = trop d'azote → on <strong>remonte</strong>.",
+    ],
+    10: [
+        "Quoi qu'il arrive, le <strong>détendeur reste en bouche</strong> quand on remonte une victime.",
+    ],
+    11: [
+        "Lis deux fois l'énoncé, fais un <strong>schéma clair</strong>, et prends toujours la valeur "
+        "<strong>immédiatement supérieure</strong> si elle manque dans la table.",
+        "Vitesses à connaître par cœur : <strong>15 m/min</strong> à la remontée, <strong>6 m/min</strong> "
+        "entre les paliers.",
+    ],
+    12: [
+        "Le piège préféré des examinateurs : la <strong>majoration ne compte PAS</strong> pour "
+        "l'heure de sortie, seulement pour les paliers !",
+        "IS &lt; 15 min = <strong>consécutive</strong> ; entre 15 min et 12 h = <strong>successive</strong>. "
+        "Ne mélange pas tout.",
+    ],
+    13: [
+        "Apprends les chiffres clés : <strong>16 ans</strong>, licence <strong>15 mois</strong>, certificat "
+        "<strong>1 an</strong>, sinistre sous <strong>5 jours</strong>, autonomie <strong>20 m</strong> / "
+        "encadré <strong>40 m</strong>.",
+    ],
+    14: [
+        "Le doute profite toujours à la sécurité : enrhumé, fatigué ou pas envie → "
+        "<strong>on ne plonge pas</strong>. Tu es seul juge.",
+    ],
+    15: [
+        "1er étage = HP vers <strong>moyenne pression</strong> ; 2e étage = à la demande. Et la bouée "
+        "ne compense <strong>jamais</strong> un sur-lestage !",
+    ],
+}
+
+
+# Ancien contenu « Astuces » — conservé pour mémoire mais remplacé par les
+# conseils de Pascal le Mérou intégrés aux fiches (voir HINTS ci-dessus).
 ASTUCES = [
     {
         "titre": "Méthode générale pour les QCM",

@@ -505,46 +505,504 @@ EXERCICE_QUESTIONS = [
 ]
 
 
-def _chapitre_titre(num):
-    for c in CHAPITRES:
-        if c["num"] == num:
-            return c["title"]
-    return ""
+# ===========================================================================
+# Questions FACTUELLES supplémentaires (connaissances du cours), par chapitre
+# ===========================================================================
+FACTUELLES = [
+    # --- 1. Pression
+    {"chapitre": 1, "q": "1 bar correspond environ à la pression d'une colonne d'eau de mer de :",
+     "options": ["1 m", "5 m", "10 m", "20 m"], "correct": 2,
+     "explication": "On compte +1 bar tous les 10 m d'eau."},
+    {"chapitre": 1, "q": "À la surface, la pression absolue vaut :",
+     "options": ["0 bar", "1 bar", "2 bar", "10 bar"], "correct": 1,
+     "explication": "Pabs = Patm = 1 bar en surface (Phyd = 0)."},
+    {"chapitre": 1, "q": "Quand on descend, la pression absolue :",
+     "options": ["diminue", "augmente", "reste constante", "s'annule"], "correct": 1,
+     "explication": "Elle augmente de 1 bar tous les 10 m."},
+    {"chapitre": 1, "q": "La pression atmosphérique sous l'eau :",
+     "options": ["disparaît", "s'ajoute à la pression de l'eau (pression absolue)",
+                 "double à 10 m", "ne compte pas"], "correct": 1,
+     "explication": "Pabs = Patm + Phyd : la pression atmosphérique s'ajoute toujours."},
+    {"chapitre": 1, "q": "La pression est définie comme :",
+     "options": ["une force sur une surface", "un volume sur un temps",
+                 "une masse sur une longueur", "une vitesse"], "correct": 0,
+     "explication": "Une pression = résultat d'une force appliquée sur une surface."},
+    {"chapitre": 1, "q": "À 45 m, la pression absolue vaut :",
+     "options": ["4,5 bar", "5,5 bar", "5 bar", "4 bar"], "correct": 1,
+     "explication": "Pabs = 1 + 45/10 = 5,5 bar."},
+    # --- 2. Archimède
+    {"chapitre": 2, "q": "La poussée d'Archimède est dirigée :",
+     "options": ["de haut en bas", "de bas en haut (verticalement)",
+                 "horizontalement", "vers le fond"], "correct": 1,
+     "explication": "C'est une poussée verticale dirigée de bas en haut."},
+    {"chapitre": 2, "q": "1 litre d'eau de mer déplacé crée une poussée d'environ :",
+     "options": ["0,1 kg", "1 kg", "10 kg", "0,5 kg"], "correct": 1,
+     "explication": "1 L d'eau ≈ 1 kg → 1 kg de poussée."},
+    {"chapitre": 2, "q": "Un objet dont le poids apparent est négatif :",
+     "options": ["coule", "remonte", "reste immobile", "se dissout"], "correct": 1,
+     "explication": "Poids apparent < 0 → flottabilité positive → l'objet remonte."},
+    {"chapitre": 2, "q": "Ajouter du plomb au lestage rend la flottabilité :",
+     "options": ["plus positive", "plus négative", "nulle", "inchangée"], "correct": 1,
+     "explication": "Plus de poids → poids apparent plus grand → flottabilité plus négative."},
+    {"chapitre": 2, "q": "Un plongeur en équilibre (flottabilité nulle) a un poids apparent :",
+     "options": ["positif", "négatif", "nul", "infini"], "correct": 2,
+     "explication": "Flottabilité nulle ↔ poids apparent = 0."},
+    {"chapitre": 2, "q": "La poussée d'Archimède dépend-elle de la profondeur ?",
+     "options": ["oui, elle augmente", "oui, elle diminue", "non, elle est constante",
+                 "seulement après 30 m"], "correct": 2,
+     "explication": "Elle est constante : elle ne dépend que du volume déplacé."},
+    # --- 3. Boyle-Mariotte
+    {"chapitre": 3, "q": "À température constante, si la pression double, le volume :",
+     "options": ["double", "est divisé par 2", "ne change pas", "est multiplié par 4"], "correct": 1,
+     "explication": "Volume et pression sont inversement proportionnels."},
+    {"chapitre": 3, "q": "La loi de Boyle-Mariotte suppose une température :",
+     "options": ["croissante", "constante", "décroissante", "nulle"], "correct": 1,
+     "explication": "P×V = constante à température constante."},
+    {"chapitre": 3, "q": "En remontant, le volume d'air d'un espace souple :",
+     "options": ["augmente", "diminue", "ne change pas", "se liquéfie"], "correct": 0,
+     "explication": "La pression diminue → le volume augmente."},
+    {"chapitre": 3, "q": "Entre 10 m et la surface, le volume d'un gaz est :",
+     "options": ["multiplié par 2", "divisé par 2", "inchangé", "multiplié par 4"], "correct": 0,
+     "explication": "La pression passe de 2 à 1 bar → le volume double."},
+    {"chapitre": 3, "q": "P1×V1 = P2×V2 traduit que P et V sont :",
+     "options": ["proportionnels", "inversement proportionnels", "indépendants", "égaux"], "correct": 1,
+     "explication": "Le produit P×V reste constant."},
+    {"chapitre": 3, "q": "Les barotraumatismes découlent surtout de la loi de :",
+     "options": ["Henry", "Dalton", "Boyle-Mariotte", "Archimède"], "correct": 2,
+     "explication": "Ce sont des variations de volume d'air → Boyle-Mariotte."},
+    # --- 4. Autonomie
+    {"chapitre": 4, "q": "La quantité d'air d'un bloc (en litres) se calcule par :",
+     "options": ["volume + pression", "volume × pression", "pression / volume", "volume − réserve"],
+     "correct": 1, "explication": "Quantité d'air = volume du bloc × pression."},
+    {"chapitre": 4, "q": "Un bloc de 15 L à 230 bar contient :",
+     "options": ["3450 L", "3000 L", "245 L", "1725 L"], "correct": 0,
+     "explication": "15 × 230 = 3450 L d'air détendu."},
+    {"chapitre": 4, "q": "La consommation à 30 m par rapport à la surface est :",
+     "options": ["identique", "doublée", "multipliée par 3", "multipliée par 4"], "correct": 3,
+     "explication": "À 30 m, Pabs = 4 bar → consommation × 4."},
+    {"chapitre": 4, "q": "La pression de réserve usuelle est de :",
+     "options": ["10 bar", "30 bar", "50 bar", "100 bar"], "correct": 2,
+     "explication": "On garde en général 50 bar de réserve."},
+    {"chapitre": 4, "q": "À durée et conso égales, plus on plonge profond, l'autonomie :",
+     "options": ["augmente", "diminue", "ne change pas", "double"], "correct": 1,
+     "explication": "La consommation augmente avec la pression → autonomie réduite."},
+    # --- 5. Barotraumatismes
+    {"chapitre": 5, "q": "L'équilibrage des oreilles se fait surtout :",
+     "options": ["à la descente", "à la remontée", "en surface", "au palier"], "correct": 0,
+     "explication": "On équilibre dès la tête sous l'eau, à la descente (jamais Valsalva à la remontée)."},
+    {"chapitre": 5, "q": "Un rhume ou une sinusite :",
+     "options": ["n'a aucun effet", "contre-indique la plongée", "facilite l'équilibrage",
+                 "n'agit que sur les dents"], "correct": 1,
+     "explication": "Enrhumé/sinusite : on ne plonge pas (risque de barotraumatisme)."},
+    {"chapitre": 5, "q": "Le barotraumatisme des dents survient plutôt :",
+     "options": ["à la descente", "à la remontée", "en surface", "au palier"], "correct": 1,
+     "explication": "L'air piégé sous une dent se dilate à la remontée."},
+    {"chapitre": 5, "q": "Le plaquage de masque se prévient en :",
+     "options": ["soufflant par le nez à la descente", "bloquant sa respiration",
+                 "faisant un Valsalva", "serrant la sangle"], "correct": 0,
+     "explication": "On souffle de l'air par le nez dans le masque à la descente."},
+    {"chapitre": 5, "q": "La surpression pulmonaire est surtout à risque :",
+     "options": ["en profondeur", "près de la surface (10 m → 0 m)", "au fond", "au palier de 6 m"],
+     "correct": 1, "explication": "Entre 10 m et 0 m le volume double : c'est là que le risque est maximal."},
+    {"chapitre": 5, "q": "Les barotraumatismes dépendent-ils de la durée de plongée ?",
+     "options": ["oui", "non, ils en sont indépendants", "seulement après 1 h", "uniquement au-delà de 30 m"],
+     "correct": 1, "explication": "Ils sont indépendants de la durée et de la profondeur."},
+    # --- 6. Henry
+    {"chapitre": 6, "q": "À saturation, la pression du gaz et la tension dans le liquide sont :",
+     "options": ["P > T", "P < T", "P = T", "P = 0"], "correct": 2,
+     "explication": "Saturation = équilibre : P = T."},
+    {"chapitre": 6, "q": "À la descente, l'azote :",
+     "options": ["s'élimine", "se dissout dans les tissus", "ne bouge pas", "devient liquide"], "correct": 1,
+     "explication": "La pression augmente → l'azote se dissout (sous-saturation, P > T)."},
+    {"chapitre": 6, "q": "Plus la pression augmente, la quantité de gaz dissous :",
+     "options": ["diminue", "augmente", "reste constante", "s'annule"], "correct": 1,
+     "explication": "Loi de Henry : quantité dissoute ∝ pression."},
+    {"chapitre": 6, "q": "La sursaturation critique provoque :",
+     "options": ["une dissolution lente", "un dégazage anarchique (grosses bulles)",
+                 "une saturation", "rien"], "correct": 1,
+     "explication": "Quand T ≫ P, l'azote dégaze en grosses bulles → accident."},
+    {"chapitre": 6, "q": "Le liquide considéré par la loi de Henry en plongée est :",
+     "options": ["l'eau de mer", "le sang seul", "l'ensemble du corps (≈70 % d'eau)", "l'air des poumons"],
+     "correct": 2, "explication": "Le corps humain, composé majoritairement d'eau."},
+    # --- 7. ADD
+    {"chapitre": 7, "q": "Pour décrire l'ADD, le corps est modélisé en :",
+     "options": ["organes", "compartiments", "couches", "membranes"], "correct": 1,
+     "explication": "Des compartiments qui saturent/désaturent à des vitesses différentes."},
+    {"chapitre": 7, "q": "Les « puces » correspondent à une atteinte :",
+     "options": ["osseuse", "cutanée", "neurologique", "de l'oreille interne"], "correct": 1,
+     "explication": "Fourmillements et plaques rouges sur la peau."},
+    {"chapitre": 7, "q": "Devant un ADD suspecté, on administre de l'oxygène :",
+     "options": ["à 21 %", "à 50 %", "à 100 %", "pas du tout"], "correct": 2,
+     "explication": "Oxygénothérapie normobare à 100 %."},
+    {"chapitre": 7, "q": "Un palier obligatoire de 3 m peut être réalisé à :",
+     "options": ["2,5 m", "4 m mais jamais 2,5 m", "1 m", "n'importe quelle profondeur"], "correct": 1,
+     "explication": "On peut le faire à 4 m, en aucun cas à 2,5 m."},
+    {"chapitre": 7, "q": "Quel facteur NE favorise PAS un ADD ?",
+     "options": ["le froid", "l'effort", "le repos et le calme", "la fatigue"], "correct": 2,
+     "explication": "Froid, effort, fatigue, anxiété favorisent l'ADD ; le calme le limite."},
+    {"chapitre": 7, "q": "Les accidents neurologiques de l'ADD peuvent donner :",
+     "options": ["des fourmillements/paralysie des jambes", "une simple soif",
+                 "une faim intense", "une meilleure vision"], "correct": 0,
+     "explication": "Troubles moteurs, fourmillements, voire paraplégie."},
+    # --- 8. Dalton
+    {"chapitre": 8, "q": "La pression d'un mélange gazeux est égale à :",
+     "options": ["la pression du gaz majoritaire", "la somme des pressions partielles",
+                 "la moyenne des pressions", "la pression de l'oxygène"], "correct": 1,
+     "explication": "Loi de Dalton : Ptotale = somme des pressions partielles."},
+    {"chapitre": 8, "q": "La pression partielle d'un gaz dépend :",
+     "options": ["de la température seule", "de la pression totale et du pourcentage du gaz",
+                 "du volume du bloc", "de la profondeur seule"], "correct": 1,
+     "explication": "Ppa = Pression totale × pourcentage du gaz."},
+    {"chapitre": 8, "q": "À 40 m, la pression partielle d'azote (air) vaut :",
+     "options": ["3,2 bar", "4 bar", "1 bar", "0,8 bar"], "correct": 1,
+     "explication": "Pabs = 5 bar à 40 m ; PpN2 = 5 × 0,8 = 4 bar."},
+    {"chapitre": 8, "q": "Dans l'air, l'oxygène représente environ :",
+     "options": ["80 %", "50 %", "20 %", "100 %"], "correct": 2,
+     "explication": "Air ≈ 20 % O2 et 80 % N2."},
+    {"chapitre": 8, "q": "La narcose est liée à la pression partielle de :",
+     "options": ["l'oxygène", "l'azote", "l'hélium", "la vapeur d'eau"], "correct": 1,
+     "explication": "Élévation de la PpN2 (et probablement du CO2)."},
+    # --- 9. Toxicité des gaz
+    {"chapitre": 9, "q": "L'essoufflement est dû à une accumulation de :",
+     "options": ["azote", "oxygène", "gaz carbonique (CO2)", "hélium"], "correct": 2,
+     "explication": "Intoxication au CO2."},
+    {"chapitre": 9, "q": "Devant un essoufflement, on favorise :",
+     "options": ["l'inspiration", "l'expiration", "l'apnée", "l'accélération du rythme"], "correct": 1,
+     "explication": "Arrêt de l'effort et expiration favorisée."},
+    {"chapitre": 9, "q": "La narcose apparaît souvent à partir de :",
+     "options": ["10 m", "20 m", "40 m", "60 m"], "correct": 2,
+     "explication": "Possible dès 30 m, fréquente à partir de 40 m."},
+    {"chapitre": 9, "q": "Le « rendez-vous syncopal des 7 m » concerne :",
+     "options": ["la plongée bouteille profonde", "l'apnée après hyperventilation",
+                 "le palier de 3 m", "la narcose"], "correct": 1,
+     "explication": "Syncope hypoxique en fin d'apnée, favorisée par l'hyperventilation."},
+    {"chapitre": 9, "q": "À 40 m, en cas d'essoufflement, il faut :",
+     "options": ["récupérer sur place", "descendre", "remonter", "accélérer la respiration"], "correct": 2,
+     "explication": "À 40 m on ne récupère pas d'un essoufflement : on remonte."},
+    {"chapitre": 9, "q": "La toxicité de l'oxygène concerne surtout :",
+     "options": ["tous les plongeurs dès 10 m", "les N3 et plongeurs Nitrox",
+                 "uniquement les apnéistes", "personne"], "correct": 1,
+     "explication": "Dangereuse vers 1,6 bar de PpO2 (≈ 66 m à l'air) : surtout N3 et Nitrox."},
+    # --- 10. Noyade
+    {"chapitre": 10, "q": "En remontant une victime, on maintient :",
+     "options": ["le masque enlevé", "le détendeur en bouche", "la tête sous l'eau", "les bras levés"],
+     "correct": 1, "explication": "On maintient le détendeur en bouche pendant l'extraction."},
+    {"chapitre": 10, "q": "Une noyade secondaire fait suite à :",
+     "options": ["un épuisement", "une syncope ou perte de connaissance",
+                 "un bon palier", "une plongée courte"], "correct": 1,
+     "explication": "Elle succède à une syncope/perte de connaissance en milieu irrespirable."},
+    {"chapitre": 10, "q": "Après extraction d'une victime, on :",
+     "options": ["la laisse seule", "alerte les secours, réchauffe et rassure",
+                 "la fait replonger", "attend 1 h"], "correct": 1,
+     "explication": "Signe de détresse, appel des secours, réchauffer et rassurer."},
+    {"chapitre": 10, "q": "L'hyperventilation avant une apnée :",
+     "options": ["est recommandée", "favorise la syncope", "n'a aucun effet", "réchauffe le corps"],
+     "correct": 1, "explication": "Elle retarde l'envie de respirer et favorise la syncope."},
+    # --- 11. Tables MN90 (1)
+    {"chapitre": 11, "q": "La vitesse de remontée entre deux paliers est de :",
+     "options": ["6 m/min", "15 m/min", "10 m/min", "17 m/min"], "correct": 0,
+     "explication": "Entre paliers : 6 m/min (≈ 30 s par tranche de 3 m)."},
+    {"chapitre": 11, "q": "Les paliers de décompression se font tous les :",
+     "options": ["2 m", "3 m", "5 m", "6 m"], "correct": 1,
+     "explication": "De 3 en 3 mètres."},
+    {"chapitre": 11, "q": "Si la profondeur n'existe pas dans la table, on prend :",
+     "options": ["la valeur inférieure", "la valeur immédiatement supérieure",
+                 "la moyenne", "on interpole"], "correct": 1,
+     "explication": "Valeur immédiatement supérieure ; l'interpolation est interdite."},
+    {"chapitre": 11, "q": "Le palier de sécurité recommandé est de :",
+     "options": ["3 min à 3 m", "5 min à 5 m", "1 min à 6 m", "10 min à 3 m"], "correct": 0,
+     "explication": "Palier de principe : 3 min à 3 m."},
+    {"chapitre": 11, "q": "Les tables MN90 sont prévues pour des plongées :",
+     "options": ["au Nitrox", "à l'air", "à l'oxygène pur", "au Trimix"], "correct": 1,
+     "explication": "Plongées à l'air, au niveau de la mer, 2 plongées max/24 h."},
+    {"chapitre": 11, "q": "La courbe de sécurité n'est valable que pour :",
+     "options": ["la 1ère plongée du jour", "la 2e plongée", "les plongées de nuit",
+                 "les plongées profondes"], "correct": 0,
+     "explication": "Elle ne s'applique qu'à la première plongée de la journée."},
+    {"chapitre": 11, "q": "MN90 a été élaborée par :",
+     "options": ["la PADI", "la Marine Nationale", "la CMAS", "la Royal Navy"], "correct": 1,
+     "explication": "Marine Nationale, utilisée à partir de 1990."},
+    # --- 12. Tables MN90 (2)
+    {"chapitre": 12, "q": "Deux plongées séparées de moins de 15 min sont :",
+     "options": ["successives", "consécutives", "isolées", "interdites"], "correct": 1,
+     "explication": "IS < 15 min → consécutives (une seule plongée)."},
+    {"chapitre": 12, "q": "L'azote résiduel se lit dans :",
+     "options": ["le tableau 1", "le tableau 2", "le tableau IV", "la courbe de sécurité"], "correct": 0,
+     "explication": "Tableau 1 : azote résiduel selon GPS et intervalle de surface."},
+    {"chapitre": 12, "q": "La majoration se lit dans :",
+     "options": ["le tableau 1", "le tableau 2", "le tableau III", "la courbe"], "correct": 1,
+     "explication": "Tableau 2 : majoration selon azote résiduel et profondeur prévue."},
+    {"chapitre": 12, "q": "La majoration s'ajoute :",
+     "options": ["à l'heure de sortie", "à la durée de la 2e plongée (pour les paliers)",
+                 "à la profondeur", "à l'intervalle de surface"], "correct": 1,
+     "explication": "C'est un allongement fictif de la durée de la 2e plongée."},
+    {"chapitre": 12, "q": "Au-delà de 12 h entre deux plongées, on considère :",
+     "options": ["une plongée successive", "une plongée consécutive",
+                 "une plongée simple (isolée)", "deux plongées interdites"], "correct": 2,
+     "explication": "12 h = désaturation quasi complète → plongée simple."},
+    {"chapitre": 12, "q": "La lettre GPS indique :",
+     "options": ["la profondeur du palier", "l'azote résiduel dans l'organisme",
+                 "la vitesse de remontée", "l'heure de sortie"], "correct": 1,
+     "explication": "Le GPS code la quantité d'azote dissous restant."},
+    # --- 13. Réglementation
+    {"chapitre": 13, "q": "Un N2 encadré par un guide de palanquée peut aller jusqu'à :",
+     "options": ["20 m", "40 m", "60 m", "12 m"], "correct": 1,
+     "explication": "Encadré jusqu'à 40 m ; en autonomie entre N2 jusqu'à 20 m."},
+    {"chapitre": 13, "q": "Âge minimum pour le Niveau 2 :",
+     "options": ["12 ans", "14 ans", "16 ans", "18 ans"], "correct": 2,
+     "explication": "Au moins 16 ans (autorisation parentale si mineur)."},
+    {"chapitre": 13, "q": "Le certificat médical de non-contre-indication est valable :",
+     "options": ["6 mois", "1 an", "2 ans", "5 ans"], "correct": 1,
+     "explication": "Validité d'un an."},
+    {"chapitre": 13, "q": "La RC (responsabilité civile) au tiers est :",
+     "options": ["facultative", "obligatoire et fournie avec la licence",
+                 "réservée aux compétiteurs", "inutile"], "correct": 1,
+     "explication": "Obligatoire, fournie avec la licence FFESSM."},
+    {"chapitre": 13, "q": "En autonomie, chaque plongeur doit pouvoir donner de l'air via :",
+     "options": ["un seul détendeur", "un octopus ou 2 détendeurs",
+                 "le gilet", "le parachute"], "correct": 1,
+     "explication": "Octopus ou 2 détendeurs : donner de l'air sans échange d'embout."},
+    {"chapitre": 13, "q": "La licence FFESSM (loisir) est valable :",
+     "options": ["12 mois", "15 mois", "24 mois", "1 saison"], "correct": 1,
+     "explication": "15 mois (d'octobre à décembre de l'année suivante)."},
+    # --- 14. Comportement et sécurité
+    {"chapitre": 14, "q": "On ne plonge pas si :",
+     "options": ["il fait beau", "on est enrhumé", "l'eau est à 20 °C", "la palanquée est complète"],
+     "correct": 1, "explication": "Rhume/sinusite, méforme ou absence d'envie : on ne plonge pas."},
+    {"chapitre": 14, "q": "Bouteille bien ouverte : en respirant, l'aiguille du manomètre :",
+     "options": ["chute", "ne bouge pas", "monte", "clignote"], "correct": 1,
+     "explication": "Si elle bouge à l'inspiration, la bouteille n'est pas (assez) ouverte."},
+    {"chapitre": 14, "q": "En cas de perte de palanquée :",
+     "options": ["continuer seul", "chercher ~1 min puis remonter doucement",
+                 "remonter vite", "redescendre"], "correct": 1,
+     "explication": "1 à 2 tours d'horizon (~1 min) puis remontée lente et attente en surface."},
+    {"chapitre": 14, "q": "Après la plongée, on évite l'avion pendant :",
+     "options": ["1 h", "6 h", "au moins 12 h", "30 min"], "correct": 2,
+     "explication": "Pas d'avion ni d'altitude dans les 12 à 24 h."},
+    {"chapitre": 14, "q": "Le seul juge de son aptitude à plonger ce jour-là est :",
+     "options": ["le moniteur", "le binôme", "soi-même", "le club"], "correct": 2,
+     "explication": "Vous êtes seul apte à juger de votre état ; ne pas se laisser influencer."},
+    # --- 15. Matériel
+    {"chapitre": 15, "q": "Le 1er étage du détendeur détend la haute pression vers :",
+     "options": ["la pression ambiante", "la moyenne pression (≈10 bar + Pabs)",
+                 "la basse pression", "la réserve"], "correct": 1,
+     "explication": "1er étage : HP → moyenne pression."},
+    {"chapitre": 15, "q": "Le 2e étage du détendeur délivre l'air :",
+     "options": ["en continu", "à la demande, à la pression ambiante",
+                 "sous haute pression", "uniquement en surface"], "correct": 1,
+     "explication": "À la demande et à la pression ambiante."},
+    {"chapitre": 15, "q": "Un gilet stabilisateur comporte au minimum :",
+     "options": ["1 purge", "2 purges", "3 purges", "5 purges"], "correct": 2,
+     "explication": "3 purges (2 rapides + 1 lente) et 2 mécanismes de gonflage."},
+    {"chapitre": 15, "q": "La bouée (gilet) sert à :",
+     "options": ["compenser un sur-lestage", "s'équilibrer et se maintenir en surface",
+                 "remplacer le lestage", "respirer"], "correct": 1,
+     "explication": "Elle ne doit pas compenser un sur-lestage."},
+    {"chapitre": 15, "q": "Après la plongée, le détendeur doit être :",
+     "options": ["laissé tel quel", "rincé à l'eau douce et séché",
+                 "graissé à chaque fois", "démonté"], "correct": 1,
+     "explication": "Rinçage à l'eau douce, séchage, rangement à l'abri."},
+    {"chapitre": 15, "q": "Le parachute de palier sert à :",
+     "options": ["descendre plus vite", "se faire repérer en surface",
+                 "respirer au palier", "mesurer la profondeur"], "correct": 1,
+     "explication": "Repérage en surface et cohésion de la palanquée au palier."},
+    {"chapitre": 15, "q": "Les contenances standards des bouteilles sont :",
+     "options": ["5-10-15-20 L", "6-9-12-15-18 L", "8-16-24 L", "10-12-14 L"], "correct": 1,
+     "explication": "6, 9, 12, 15 et 18 litres (200 ou 230 bar)."},
+]
+
+
+# ===========================================================================
+# Générateurs de questions de CALCUL (réponses calculées → fiables)
+# ===========================================================================
+
+def _fmt(x, unit=""):
+    """Formate un nombre à la française (virgule décimale, sans .0 inutile)."""
+    x = round(float(x), 2)
+    if abs(x - round(x)) < 1e-9:
+        s = str(int(round(x)))
+    else:
+        s = ("%.2f" % x).rstrip("0").rstrip(".").replace(".", ",")
+    return (s + " " + unit) if unit else s
+
+
+def _numq(qid, chap_num, text, answer, distractors, unit, explication):
+    """Construit une question numérique : 4 options distinctes, bon index calculé."""
+    answer = round(float(answer), 2)
+    vals = [answer]
+    for d in distractors:
+        d = round(float(d), 2)
+        if all(abs(d - v) > 1e-6 for v in vals):
+            vals.append(d)
+        if len(vals) == 4:
+            break
+    pad = 1
+    while len(vals) < 4:
+        cand = round(answer + pad, 2)
+        if cand > 0 and all(abs(cand - v) > 1e-6 for v in vals):
+            vals.append(cand)
+        pad += 1
+    vals_sorted = sorted(vals)
+    options = [_fmt(v, unit) for v in vals_sorted]
+    correct = min(range(len(vals_sorted)), key=lambda i: abs(vals_sorted[i] - answer))
+    return {"id": qid, "chapitre": chap_num, "q": text,
+            "options": options, "correct": correct, "explication": explication}
+
+
+def _gen_pression():
+    out = []
+    depths = [5, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 24, 25, 28, 30, 32,
+              34, 35, 38, 40, 42, 44, 45, 48, 50, 52, 55, 58]
+    for i, d in enumerate(depths):
+        pabs, phyd = 1 + d / 10, d / 10
+        out.append(_numq(f"gpa{i}", 1,
+            f"Quelle est la pression absolue à {d} m de profondeur ?",
+            pabs, [phyd, pabs + 1, 1 + d / 100, pabs + 2], "bar",
+            f"Pabs = 1 + {d}/10 = {_fmt(pabs)} bar."))
+        out.append(_numq(f"gph{i}", 1,
+            f"Quelle est la pression hydrostatique (relative) à {d} m ?",
+            phyd, [pabs, phyd + 1, d / 100, phyd + 2], "bar",
+            f"Phyd = {d}/10 = {_fmt(phyd)} bar (Pabs = {_fmt(pabs)} bar)."))
+    for j, p in enumerate([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]):
+        d = (p - 1) * 10
+        out.append(_numq(f"gpd{j}", 1,
+            f"À quelle profondeur la pression absolue vaut-elle {_fmt(p)} bar ?",
+            d, [p * 10, d + 5, d - 5 if d > 5 else d + 10, d + 10], "m",
+            f"Phyd = {_fmt(p)} − 1 = {_fmt(p - 1)} bar → profondeur = {_fmt(d)} m."))
+    return out
+
+
+def _gen_boyle():
+    out = []
+    i = 0
+    for V in [1, 2, 3, 4, 5, 6]:
+        for d in [10, 20, 30, 40, 50]:
+            pabs = 1 + d / 10
+            surf = V * pabs
+            out.append(_numq(f"gba{i}", 3,
+                f"À {d} m, une bouée contient {V} L d'air. Quel volume cela représente-t-il "
+                f"en surface (sans purger) ?",
+                surf, [V * (pabs - 1), V * (pabs + 1), V, V / pabs], "L",
+                f"P1×V1 = P2×V2 → {_fmt(pabs)}×{V} = 1×V → V = {_fmt(surf)} L."))
+            i += 1
+    for k, (V0, d) in enumerate([(6, 10), (12, 10), (6, 20), (12, 20), (9, 20), (12, 30),
+                                 (6, 30), (8, 30), (12, 40), (8, 40), (15, 20), (18, 20),
+                                 (10, 10), (20, 30), (24, 40)]):
+        pabs = 1 + d / 10
+        vv = V0 / pabs
+        out.append(_numq(f"gbd{k}", 3,
+            f"Un ballon souple de {V0} L (en surface) descend à {d} m. Quel est son volume ?",
+            vv, [V0, V0 * pabs, V0 / (pabs - 1) if pabs > 1.1 else V0 + 1, vv + 1], "L",
+            f"1×{V0} = {_fmt(pabs)}×V → V = {_fmt(vv)} L."))
+    return out
+
+
+def _gen_autonomie():
+    out = []
+    combos = []
+    for Vb in [10, 12, 15]:
+        for P in [200, 230]:
+            for d in [10, 20, 30, 40]:
+                for C in [15, 18, 20, 22]:
+                    combos.append((Vb, P, d, C))
+    step = max(1, len(combos) // 60)
+    idx = 0
+    for k in range(0, len(combos), step):
+        Vb, P, d, C = combos[k]
+        pabs = 1 + d / 10
+        t = (P - 50) * Vb / (C * pabs)
+        out.append(_numq(f"gau{idx}", 4,
+            f"Bloc de {Vb} L à {P} bar, plongée à {d} m, consommation {C} L/min en surface, "
+            f"réserve 50 bar. Au bout de combien de temps passe-t-on sur réserve ?",
+            t, [P * Vb / (C * pabs), (P - 50) * Vb / C, (P - 50) * Vb / (C * max(d / 10, 1)), t + 5],
+            "min",
+            f"Air consommable = ({P}−50)×{Vb} = {int((P - 50) * Vb)} L ; conso à {d} m = "
+            f"{C}×{_fmt(pabs)} = {_fmt(C * pabs)} L/min ; {int((P - 50) * Vb)} ÷ "
+            f"{_fmt(C * pabs)} = {_fmt(t)} min."))
+        idx += 1
+    return out
+
+
+def _gen_dalton():
+    out = []
+    for i, d in enumerate([0, 10, 20, 30, 40, 50, 15, 25, 35, 45]):
+        pabs = 1 + d / 10
+        po2, pn2 = pabs * 0.2, pabs * 0.8
+        out.append(_numq(f"gdo{i}", 8,
+            f"Pression partielle d'oxygène (air, 20 %) à {d} m ?",
+            po2, [pn2, pabs * 0.21, pabs * 0.16, po2 + 0.2], "bar",
+            f"PpO2 = {_fmt(pabs)} × 0,20 = {_fmt(po2)} bar."))
+        out.append(_numq(f"gdn{i}", 8,
+            f"Pression partielle d'azote (air, 80 %) à {d} m ?",
+            pn2, [po2, pabs * 0.79, pn2 + 0.8, pabs * 0.7], "bar",
+            f"PpN2 = {_fmt(pabs)} × 0,80 = {_fmt(pn2)} bar."))
+    return out
+
+
+def _gen_archimede():
+    out = []
+    i = 0
+    for W in [10, 12, 15, 18, 20, 24, 16, 22]:
+        for Vol in [8, 10, 12, 13, 15]:
+            pa = W - Vol
+            verdict = "elle coule" if pa > 0 else ("elle remonte" if pa < 0 else "équilibre")
+            out.append(_numq(f"gar{i}", 2,
+                f"Un objet pèse {W} kg pour un volume de {Vol} L (eau de mer). "
+                f"Quel est son poids apparent ?",
+                pa, [W + Vol, Vol - W, 2 * W - Vol, pa - 2], "kg",
+                f"Poussée = {Vol} kg ; poids apparent = {W} − {Vol} = {_fmt(pa)} kg ({verdict})."))
+            i += 1
+    return out
+
+
+def _generate_all():
+    questions = []
+    for gen in (_gen_pression, _gen_boyle, _gen_autonomie, _gen_dalton, _gen_archimede):
+        questions.extend(gen())
+    return questions
+
+
+# ===========================================================================
+# Construction de la banque complète
+# ===========================================================================
+
+_CHAP_BY_NUM = {c["num"]: c for c in CHAPITRES}
+
+
+def _attach(q, qid):
+    chap = _CHAP_BY_NUM[q["chapitre"]]
+    return {
+        "id": qid,
+        "chapitre": q["chapitre"],
+        "chapitre_titre": chap["title"],
+        "chapitre_slug": chap["slug"],
+        "q": q["q"],
+        "options": q["options"],
+        "correct": q["correct"],
+        "explication": q["explication"],
+    }
 
 
 def build_question_bank():
-    """Construit la banque complète : questions des fiches + questions supplémentaires."""
+    """Banque complète : fiches + supplémentaires + exercices + factuelles + calculs générés."""
     bank = []
-    # 1) Questions issues des fiches
+    # 1) Questions des fiches de cours
     for chap in CHAPITRES:
         for i, q in enumerate(chap["questions"]):
-            bank.append({
-                "id": f"c{chap['num']}q{i}",
-                "chapitre": chap["num"],
-                "chapitre_titre": chap["title"],
-                "chapitre_slug": chap["slug"],
-                "q": q["q"],
-                "options": q["options"],
-                "correct": q["correct"],
-                "explication": q["explication"],
-            })
-    # 2) Questions supplémentaires + 3) questions issues des exercices
-    for prefix, source in (("s", QUESTIONS_SUPP), ("e", EXERCICE_QUESTIONS)):
+            bank.append(_attach({**q, "chapitre": chap["num"]}, f"c{chap['num']}q{i}"))
+    # 2) Listes manuelles
+    for prefix, source in (("s", QUESTIONS_SUPP), ("e", EXERCICE_QUESTIONS), ("f", FACTUELLES)):
         for i, q in enumerate(source):
-            num = q["chapitre"]
-            chap = next(c for c in CHAPITRES if c["num"] == num)
-            bank.append({
-                "id": f"{prefix}{i}",
-                "chapitre": num,
-                "chapitre_titre": chap["title"],
-                "chapitre_slug": chap["slug"],
-                "q": q["q"],
-                "options": q["options"],
-                "correct": q["correct"],
-                "explication": q["explication"],
-            })
+            bank.append(_attach(q, f"{prefix}{i}"))
+    # 3) Questions de calcul générées (id déjà unique)
+    for q in _generate_all():
+        bank.append(_attach(q, q["id"]))
     return bank
 
 
 QUESTION_BANK = build_question_bank()
 QUESTION_BY_ID = {q["id"]: q for q in QUESTION_BANK}
+
+# Garde-fou : la banque doit contenir au moins 400 questions.
+assert len(QUESTION_BANK) >= 400, "Banque insuffisante : %d questions" % len(QUESTION_BANK)
+assert len(QUESTION_BY_ID) == len(QUESTION_BANK), "IDs de questions dupliqués !"

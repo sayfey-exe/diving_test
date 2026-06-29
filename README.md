@@ -9,13 +9,17 @@ MPS 2011 (tables MN90).
 - **📚 Fiches de cours** — les 15 chapitres du programme résumés, avec
   *l'essentiel à retenir* et **3 questions d'auto-évaluation** (correction
   immédiate) à la fin de chaque fiche.
-- **📝 Test blanc** — 40 QCM tirés au sort, navigation libre (on peut passer
-  une question et y revenir), puis **correction détaillée** avec explication et
-  renvoi au chapitre concerné.
+- **📝 Test blanc** — 40 QCM **tirés au sort sans doublon** dans une banque de
+  **plus de 400 questions**, navigation libre (on peut passer une question et y
+  revenir), puis **correction détaillée** avec explication et renvoi au chapitre.
+  Sous chaque question corrigée, une **zone de commentaire** permet de signaler
+  une remarque ; ces retours sont enregistrés et consultables côté admin pour
+  améliorer la banque.
 - **⏱️ Test examen** — 40 QCM **chronométrés** (40 min), sans correction
   pendant l'épreuve ; score et bilan par chapitre à la fin.
-- **💡 Astuces & méthode** — pièges classiques, méthode pour les QCM et les
-  exercices de tables, bons réflexes le jour de l'examen.
+- **🐟 Conseils de Pascal le Mérou** — la mascotte distille ses astuces (méthode,
+  pièges classiques, calculs) cachées derrière des **icônes ampoule 💡** dans
+  les fiches de cours.
 - **🖼️ Images du cours** — les schémas du document (anatomie, détendeur,
   profils de plongée, table MN90…) sont intégrés aux fiches concernées.
 - **✏️ Exercices corrigés** — les exercices du cours (autonomie, tables MN90…)

@@ -237,6 +237,41 @@
         });
       });
     }
+
+    // Envoi des remarques sur les questions
+    elResults.addEventListener("click", function (e) {
+      var btn = e.target.closest(".comment-send");
+      if (!btn) return;
+      var box = btn.closest(".corr-comment-box");
+      var textarea = box.querySelector("textarea");
+      var status = box.querySelector(".comment-status");
+      var texte = (textarea.value || "").trim();
+      if (!texte) { status.textContent = "Écris une remarque d'abord."; status.className = "comment-status err"; return; }
+      btn.disabled = true;
+      status.textContent = "Envoi…"; status.className = "comment-status";
+      fetch("/question/" + encodeURIComponent(btn.dataset.qid) + "/commentaire", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comment: texte }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.ok) {
+            status.textContent = "✅ Merci, ta remarque est enregistrée !";
+            status.className = "comment-status ok";
+            textarea.disabled = true;
+          } else {
+            status.textContent = d.error || "Erreur.";
+            status.className = "comment-status err";
+            btn.disabled = false;
+          }
+        })
+        .catch(function () {
+          status.textContent = "Erreur réseau.";
+          status.className = "comment-status err";
+          btn.disabled = false;
+        });
+    });
   }
 
   function renderCorrItem(d, idx) {
@@ -257,6 +292,16 @@
     }
     html += '<div class="corr-expl">💡 ' + escapeHtml(d.explication) +
       ' <a href="/cours/' + d.chapitre_slug + '">Revoir : ' + escapeHtml(d.chapitre_titre) + ' →</a></div>';
+    // Zone de commentaire (remarque sur la question)
+    html += '<details class="corr-comment">' +
+      '<summary>💬 Une remarque sur cette question ?</summary>' +
+      '<div class="corr-comment-box">' +
+        '<textarea placeholder="Ex : énoncé ambigu, réponse discutable, faute de frappe..." maxlength="1000"></textarea>' +
+        '<div class="corr-comment-actions">' +
+          '<button type="button" class="btn btn-ghost btn-sm comment-send" data-qid="' + escapeHtml(d.id) + '">Envoyer ma remarque</button>' +
+          '<span class="comment-status"></span>' +
+        '</div>' +
+      '</div></details>';
     html += '</div>';
     return html;
   }

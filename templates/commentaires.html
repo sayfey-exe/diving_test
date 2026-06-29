@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Remarques sur les questions — Admin{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('admin') }}">Admin</a> <span>/</span> Remarques
+</nav>
+
+<div class="page-head">
+  <h1>💬 Remarques sur les questions</h1>
+  <p>Retours des utilisateurs, à exploiter pour améliorer la banque de questions.</p>
+</div>
+
+{% if comments %}
+<div class="comments-list">
+  {% for c in comments %}
+  <article class="comment-card">
+    <header class="comment-meta">
+      <span class="comment-author">{{ c.pseudo or 'Anonyme' }}</span>
+      <span class="comment-qid">question <code>{{ c.question_id }}</code></span>
+      <span class="comment-date">{{ c.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+    </header>
+    {% if c.question_text %}<p class="comment-question">« {{ c.question_text }} »</p>{% endif %}
+    <p class="comment-body">{{ c.comment }}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">Aucune remarque pour l'instant.</p>
+{% endif %}
+{% endblock %}
