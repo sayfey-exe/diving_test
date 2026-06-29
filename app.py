@@ -494,8 +494,34 @@ import random  # noqa: E402  (après config pour rester lisible)
 
 
 def _tirer_questions(n):
+    """Tire n questions distinctes en équilibrant les thèmes (chapitres).
+
+    On répartit le tirage en rotation sur les chapitres pour qu'un même test
+    couvre un large éventail de thèmes plutôt que d'être dominé par les
+    chapitres riches en questions de calcul.
+    """
     n = min(n, len(QUESTION_BANK))
-    return random.sample(QUESTION_BANK, n)
+    par_chap = {}
+    for q in QUESTION_BANK:
+        par_chap.setdefault(q["chapitre"], []).append(q)
+    for lst in par_chap.values():
+        random.shuffle(lst)
+    chapitres = list(par_chap.keys())
+    random.shuffle(chapitres)
+
+    chosen, pos = [], {c: 0 for c in chapitres}
+    progressed = True
+    while len(chosen) < n and progressed:
+        progressed = False
+        for c in chapitres:
+            if pos[c] < len(par_chap[c]):
+                chosen.append(par_chap[c][pos[c]])
+                pos[c] += 1
+                progressed = True
+                if len(chosen) >= n:
+                    break
+    random.shuffle(chosen)  # mélange l'ordre final des thèmes
+    return chosen
 
 
 def _questions_pour_client(questions):

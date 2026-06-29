@@ -10,8 +10,10 @@ MPS 2011 (tables MN90).
   *l'essentiel à retenir* et **3 questions d'auto-évaluation** (correction
   immédiate) à la fin de chaque fiche.
 - **📝 Test blanc** — 40 QCM **tirés au sort sans doublon** dans une banque de
-  **plus de 400 questions**, navigation libre (on peut passer une question et y
-  revenir), puis **correction détaillée** avec explication et renvoi au chapitre.
+  **plus de 400 questions**, avec un **tirage équilibré par thème** (chaque test
+  couvre les 15 chapitres pour ne pas être répétitif), navigation libre (on peut
+  passer une question et y revenir), puis **correction détaillée** avec
+  explication et renvoi au chapitre.
   Sous chaque question corrigée, une **zone de commentaire** permet de signaler
   une remarque ; ces retours sont enregistrés et consultables côté admin pour
   améliorer la banque.

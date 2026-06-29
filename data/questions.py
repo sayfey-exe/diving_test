@@ -849,51 +849,92 @@ def _numq(qid, chap_num, text, answer, distractors, unit, explication):
             "options": options, "correct": correct, "explication": explication}
 
 
+# Contextes variés (scénarios) pour rendre les énoncés moins répétitifs.
+_SCN = [
+    "À {d} m de profondeur,",
+    "Un plongeur explore une épave à {d} m :",
+    "Au pied d'un tombant à {d} m,",
+    "Pendant une plongée à {d} m,",
+    "Pascal le Mérou nage à {d} m :",
+    "Sur un fond de {d} m,",
+    "Le long du récif à {d} m,",
+    "Un binôme descend à {d} m :",
+]
+
+
+def _scn(i, d):
+    return _SCN[i % len(_SCN)].format(d=d)
+
+
 def _gen_pression():
     out = []
     depths = [5, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 24, 25, 28, 30, 32,
               34, 35, 38, 40, 42, 44, 45, 48, 50, 52, 55, 58]
     for i, d in enumerate(depths):
         pabs, phyd = 1 + d / 10, d / 10
-        out.append(_numq(f"gpa{i}", 1,
-            f"Quelle est la pression absolue à {d} m de profondeur ?",
-            pabs, [phyd, pabs + 1, 1 + d / 100, pabs + 2], "bar",
-            f"Pabs = 1 + {d}/10 = {_fmt(pabs)} bar."))
-        out.append(_numq(f"gph{i}", 1,
-            f"Quelle est la pression hydrostatique (relative) à {d} m ?",
-            phyd, [pabs, phyd + 1, d / 100, phyd + 2], "bar",
-            f"Phyd = {d}/10 = {_fmt(phyd)} bar (Pabs = {_fmt(pabs)} bar)."))
+        if i % 3 == 0:
+            out.append(_numq(f"gpa{i}", 1,
+                f"{_scn(i, d)} quelle est la pression absolue subie par le plongeur ?",
+                pabs, [phyd, pabs + 1, 1 + d / 100, pabs + 2], "bar",
+                f"Pabs = 1 + {d}/10 = {_fmt(pabs)} bar."))
+        elif i % 3 == 1:
+            out.append(_numq(f"gph{i}", 1,
+                f"{_scn(i, d)} quelle est la pression hydrostatique (celle de l'eau seule) ?",
+                phyd, [pabs, phyd + 1, d / 100, phyd + 2], "bar",
+                f"Phyd = {d}/10 = {_fmt(phyd)} bar (Pabs = {_fmt(pabs)} bar)."))
+        else:
+            out.append(_numq(f"gpx{i}", 1,
+                f"{_scn(i, d)} la pression absolue représente combien de fois celle de la surface ?",
+                pabs, [phyd, pabs + 1, pabs - 1 if pabs > 1.1 else pabs + 2, pabs + 0.5], "fois",
+                f"Pabs / Psurface = {_fmt(pabs)} / 1 = {_fmt(pabs)} fois la pression de surface."))
     for j, p in enumerate([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]):
         d = (p - 1) * 10
         out.append(_numq(f"gpd{j}", 1,
             f"À quelle profondeur la pression absolue vaut-elle {_fmt(p)} bar ?",
             d, [p * 10, d + 5, d - 5 if d > 5 else d + 10, d + 10], "m",
             f"Phyd = {_fmt(p)} − 1 = {_fmt(p - 1)} bar → profondeur = {_fmt(d)} m."))
+    for j, (a, b) in enumerate([(10, 30), (0, 20), (15, 40), (20, 50), (5, 25), (12, 42), (8, 38)]):
+        g = (b - a) / 10
+        out.append(_numq(f"gpg{j}", 1,
+            f"De combien de bar la pression augmente-t-elle entre {a} m et {b} m ?",
+            g, [g + 1, g - 1 if g > 1 else g + 2, b - a, g + 0.5], "bar",
+            f"Variation = ({b} − {a}) / 10 = {_fmt(g)} bar."))
     return out
 
 
 def _gen_boyle():
     out = []
+    objs_up = ["la bouée d'un plongeur", "un parachute de palier", "un sac de relevage"]
     i = 0
     for V in [1, 2, 3, 4, 5, 6]:
         for d in [10, 20, 30, 40, 50]:
             pabs = 1 + d / 10
             surf = V * pabs
+            obj = objs_up[i % len(objs_up)]
             out.append(_numq(f"gba{i}", 3,
-                f"À {d} m, une bouée contient {V} L d'air. Quel volume cela représente-t-il "
-                f"en surface (sans purger) ?",
+                f"À {d} m, {obj} contient {V} L d'air. Sans purger à la remontée, quel volume "
+                f"cela représente-t-il en surface ?",
                 surf, [V * (pabs - 1), V * (pabs + 1), V, V / pabs], "L",
                 f"P1×V1 = P2×V2 → {_fmt(pabs)}×{V} = 1×V → V = {_fmt(surf)} L."))
             i += 1
+    objs_dn = ["Un ballon souple", "Une bouée", "Un sac plastique fermé", "Une poche d'air"]
     for k, (V0, d) in enumerate([(6, 10), (12, 10), (6, 20), (12, 20), (9, 20), (12, 30),
                                  (6, 30), (8, 30), (12, 40), (8, 40), (15, 20), (18, 20),
                                  (10, 10), (20, 30), (24, 40)]):
         pabs = 1 + d / 10
         vv = V0 / pabs
+        obj = objs_dn[k % len(objs_dn)]
         out.append(_numq(f"gbd{k}", 3,
-            f"Un ballon souple de {V0} L (en surface) descend à {d} m. Quel est son volume ?",
+            f"{obj} de {V0} L (en surface) est descendu à {d} m. Quel est alors son volume ?",
             vv, [V0, V0 * pabs, V0 / (pabs - 1) if pabs > 1.1 else V0 + 1, vv + 1], "L",
             f"1×{V0} = {_fmt(pabs)}×V → V = {_fmt(vv)} L."))
+    for k, ratio in enumerate([2, 3, 4, 5, 6]):
+        d = (ratio - 1) * 10
+        out.append(_numq(f"gbr{k}", 3,
+            f"À quelle profondeur le volume d'un gaz est-il divisé par {ratio} par rapport "
+            f"à la surface ?",
+            d, [d + 10, d - 10 if d > 10 else d + 20, ratio * 10, d + 5], "m",
+            f"Volume ÷ {ratio} ⇔ pression × {ratio} ⇔ Pabs = {ratio} bar ⇔ {_fmt(d)} m."))
     return out
 
 
@@ -905,21 +946,26 @@ def _gen_autonomie():
             for d in [10, 20, 30, 40]:
                 for C in [15, 18, 20, 22]:
                     combos.append((Vb, P, d, C))
-    step = max(1, len(combos) // 60)
-    idx = 0
-    for k in range(0, len(combos), step):
-        Vb, P, d, C = combos[k]
+    intros = [
+        "Bloc de {Vb} L à {P} bar, plongée à {d} m, consommation {C} L/min en surface "
+        "(réserve 50 bar).",
+        "Avec un bloc de {Vb} L gonflé à {P} bar, à {d} m, en respirant {C} L/min en surface "
+        "(réserve 50 bar).",
+        "Un plongeur (qui consomme {C} L/min en surface) part à {d} m avec un bloc {Vb} L / "
+        "{P} bar (réserve 50 bar).",
+        "Pour une plongée à {d} m : bloc {Vb} L / {P} bar, consommation {C} L/min, réserve 50 bar.",
+    ]
+    for idx, (Vb, P, d, C) in enumerate(combos):
         pabs = 1 + d / 10
         t = (P - 50) * Vb / (C * pabs)
+        intro = intros[idx % len(intros)].format(Vb=Vb, P=P, d=d, C=C)
         out.append(_numq(f"gau{idx}", 4,
-            f"Bloc de {Vb} L à {P} bar, plongée à {d} m, consommation {C} L/min en surface, "
-            f"réserve 50 bar. Au bout de combien de temps passe-t-on sur réserve ?",
+            intro + " Au bout de combien de temps passe-t-on sur la réserve ?",
             t, [P * Vb / (C * pabs), (P - 50) * Vb / C, (P - 50) * Vb / (C * max(d / 10, 1)), t + 5],
             "min",
             f"Air consommable = ({P}−50)×{Vb} = {int((P - 50) * Vb)} L ; conso à {d} m = "
             f"{C}×{_fmt(pabs)} = {_fmt(C * pabs)} L/min ; {int((P - 50) * Vb)} ÷ "
             f"{_fmt(C * pabs)} = {_fmt(t)} min."))
-        idx += 1
     return out
 
 
@@ -928,26 +974,38 @@ def _gen_dalton():
     for i, d in enumerate([0, 10, 20, 30, 40, 50, 15, 25, 35, 45]):
         pabs = 1 + d / 10
         po2, pn2 = pabs * 0.2, pabs * 0.8
-        out.append(_numq(f"gdo{i}", 8,
-            f"Pression partielle d'oxygène (air, 20 %) à {d} m ?",
-            po2, [pn2, pabs * 0.21, pabs * 0.16, po2 + 0.2], "bar",
+        if i % 2 == 0:
+            out.append(_numq(f"gdo{i}", 8,
+                f"En plongée à l'air à {d} m, quelle est la pression partielle d'oxygène ?",
+                po2, [pn2, pabs * 0.21, pabs * 0.16, po2 + 0.2], "bar",
+                f"PpO2 = {_fmt(pabs)} × 0,20 = {_fmt(po2)} bar."))
+        else:
+            out.append(_numq(f"gdn{i}", 8,
+                f"En plongée à l'air à {d} m, quelle est la pression partielle d'azote ?",
+                pn2, [po2, pabs * 0.79, pn2 + 0.8, pabs * 0.7], "bar",
+                f"PpN2 = {_fmt(pabs)} × 0,80 = {_fmt(pn2)} bar."))
+    for k, d in enumerate([12, 18, 28, 38, 48]):
+        pabs = 1 + d / 10
+        po2 = pabs * 0.2
+        out.append(_numq(f"gdo2{k}", 8,
+            f"Un plongeur est à {d} m (air) : quelle est la pression partielle d'oxygène ?",
+            po2, [pabs * 0.8, pabs * 0.21, po2 + 0.2, pabs * 0.16], "bar",
             f"PpO2 = {_fmt(pabs)} × 0,20 = {_fmt(po2)} bar."))
-        out.append(_numq(f"gdn{i}", 8,
-            f"Pression partielle d'azote (air, 80 %) à {d} m ?",
-            pn2, [po2, pabs * 0.79, pn2 + 0.8, pabs * 0.7], "bar",
-            f"PpN2 = {_fmt(pabs)} × 0,80 = {_fmt(pn2)} bar."))
     return out
 
 
 def _gen_archimede():
     out = []
+    objs = ["Un bloc", "Une statuette remontée d'une épave", "Un objet",
+            "Une ancre", "Un lest", "Une caisse étanche"]
     i = 0
     for W in [10, 12, 15, 18, 20, 24, 16, 22]:
         for Vol in [8, 10, 12, 13, 15]:
             pa = W - Vol
-            verdict = "elle coule" if pa > 0 else ("elle remonte" if pa < 0 else "équilibre")
+            verdict = "il coule" if pa > 0 else ("il remonte" if pa < 0 else "équilibre")
+            obj = objs[i % len(objs)]
             out.append(_numq(f"gar{i}", 2,
-                f"Un objet pèse {W} kg pour un volume de {Vol} L (eau de mer). "
+                f"{obj} pèse {W} kg pour un volume de {Vol} L (eau de mer). "
                 f"Quel est son poids apparent ?",
                 pa, [W + Vol, Vol - W, 2 * W - Vol, pa - 2], "kg",
                 f"Poussée = {Vol} kg ; poids apparent = {W} − {Vol} = {_fmt(pa)} kg ({verdict})."))
