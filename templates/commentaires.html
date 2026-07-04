@@ -22,6 +22,10 @@
     </header>
     {% if c.question_text %}<p class="comment-question">« {{ c.question_text }} »</p>{% endif %}
     <p class="comment-body">{{ c.comment }}</p>
+    <form method="post" action="{{ url_for('admin_delete_question_comment', cid=c.id) }}"
+          onsubmit="return confirm('Supprimer cette remarque ?');" class="admin-inline">
+      <button class="btn-del btn-del-sm">🗑️ Supprimer</button>
+    </form>
   </article>
   {% endfor %}
 </div>

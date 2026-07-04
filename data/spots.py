@@ -42,8 +42,19 @@ FISH = {
     },
 }
 
-# Spots de plongée (coordonnées approximatives).
+# Spots de plongée (coordonnées approximatives). Le premier sert de spot de
+# référence : les photos fournies proviennent de Morsiglia (Cap Corse).
 SPOTS = [
+    {
+        "id": "morsiglia",
+        "nom": "Morsiglia",
+        "lieu": "Cap Corse, Haute-Corse",
+        "lat": 42.9850, "lon": 9.3550,
+        "profondeur": "5 – 40 m",
+        "desc": "Spot sauvage du nord du Cap Corse : tombants, herbiers de posidonie "
+                "et faune méditerranéenne emblématique.",
+        "poissons": ["merou", "barracuda", "murene", "dorade", "corb", "araignee"],
+    },
     {
         "id": "port-cros",
         "nom": "Parc national de Port-Cros",

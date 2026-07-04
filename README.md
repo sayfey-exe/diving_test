@@ -31,9 +31,12 @@ MPS 2011 (tables MN90).
   chapitres étudiés** et **historique des résultats** (tests blancs et examens),
   avec note moyenne, meilleure note et **graphique d'évolution des scores**.
 - **🗺️ Spots de plongée** — une **carte interactive** (Leaflet + OpenStreetMap)
-  des spots ; chaque spot liste les **poissons observables** et une **banque de
-  photos communautaire** que les utilisateurs connectés alimentent (upload
-  redimensionné et stocké en base).
+  des spots ; chaque spot liste les **poissons observables**, une **banque de
+  photos communautaire** (upload redimensionné, stocké en base) et des
+  **commentaires**. Les utilisateurs connectés peuvent **ajouter un spot en
+  cliquant sur la carte**, et chaque photo taguée par espèce **enrichit le
+  catalogue des poissons** (`/poissons`). Les **administrateurs** peuvent
+  supprimer photos, commentaires et spots proposés par la communauté.
 - **🏆 Classement** — comparaison à la **moyenne de la communauté** et classement
   des joueurs par note moyenne (esprit de compétition).
 - **🛡️ Mode administrateur** — vue de tous les comptes et de leurs scores

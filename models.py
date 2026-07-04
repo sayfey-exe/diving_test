@@ -58,6 +58,44 @@ class QuestionComment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class Spot(db.Model):
+    """Spot de plongée (pré-défini ou ajouté par un utilisateur)."""
+    __tablename__ = "spots"
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    nom = db.Column(db.String(120), nullable=False)
+    lieu = db.Column(db.String(160))
+    lat = db.Column(db.Float, nullable=False)
+    lon = db.Column(db.Float, nullable=False)
+    profondeur = db.Column(db.String(40))
+    description = db.Column(db.Text)
+    poissons = db.Column(db.String(400))            # clés de poissons, séparées par des virgules
+    created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    pseudo = db.Column(db.String(80))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @property
+    def fish_keys(self):
+        return [k for k in (self.poissons or "").split(",") if k]
+
+    @property
+    def user_created(self):
+        return self.created_by is not None
+
+
+class SpotComment(db.Model):
+    """Commentaire d'un utilisateur sur un spot."""
+    __tablename__ = "spot_comments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    spot_key = db.Column(db.String(80), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    pseudo = db.Column(db.String(80))
+    comment = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class SpotPhoto(db.Model):
     """Photo de poisson ajoutée par un utilisateur sur un spot de plongée."""
     __tablename__ = "spot_photos"

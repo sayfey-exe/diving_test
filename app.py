@@ -32,8 +32,11 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from data.content import CHAPITRES, HINTS, PASCAL
 from data.questions import QUESTION_BANK, QUESTION_BY_ID
 from data.exercices import EXERCICES, NOTE_TABLES
-from data.spots import SPOTS, SPOT_BY_ID, FISH
-from models import db, User, TestResult, ChapterStudy, QuestionComment, SpotPhoto
+from data.spots import SPOTS, FISH
+from models import (
+    db, User, TestResult, ChapterStudy, QuestionComment,
+    Spot, SpotComment, SpotPhoto,
+)
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -150,8 +153,21 @@ def admin_required(view):
     return wrapped
 
 
+def _seed_spots():
+    """Insère les spots pré-définis dans la base si elle est vide."""
+    if Spot.query.count() == 0:
+        for s in SPOTS:
+            db.session.add(Spot(
+                key=s["id"], nom=s["nom"], lieu=s["lieu"], lat=s["lat"], lon=s["lon"],
+                profondeur=s["profondeur"], description=s["desc"],
+                poissons=",".join(s["poissons"]),
+            ))
+        db.session.commit()
+
+
 with app.app_context():
     db.create_all()
+    _seed_spots()
 
 
 # ---------------------------------------------------------------------------
@@ -209,41 +225,99 @@ def _spot_photo_counts():
     return {sid: n for sid, n in rows}
 
 
+def _slugify(text):
+    import re
+    import unicodedata
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    text = re.sub(r"[^a-zA-Z0-9]+", "-", text).strip("-").lower()
+    return text or "spot"
+
+
 @app.route("/spots")
 def spots():
+    all_spots = Spot.query.order_by(Spot.created_at.asc()).all()
     counts = _spot_photo_counts()
     spots_json = [
-        {"id": s["id"], "nom": s["nom"], "lieu": s["lieu"],
-         "lat": s["lat"], "lon": s["lon"],
-         "nb_poissons": len(s["poissons"]), "nb_photos": counts.get(s["id"], 0)}
-        for s in SPOTS
+        {"key": s.key, "nom": s.nom, "lieu": s.lieu, "lat": s.lat, "lon": s.lon,
+         "nb_poissons": len(s.fish_keys), "nb_photos": counts.get(s.key, 0),
+         "user": s.user_created}
+        for s in all_spots
     ]
-    return render_template("spots.html", spots=SPOTS, spots_json=spots_json,
+    return render_template("spots.html", spots=all_spots, spots_json=spots_json,
                            counts=counts, fish=FISH)
 
 
-@app.route("/spots/<spot_id>")
-def spot(spot_id):
-    s = SPOT_BY_ID.get(spot_id)
+@app.route("/spots/<key>")
+def spot(key):
+    s = Spot.query.filter_by(key=key).first()
     if not s:
         abort(404)
-    poissons = [dict(key=k, **FISH[k]) for k in s["poissons"] if k in FISH]
-    photos = (SpotPhoto.query.filter_by(spot_id=spot_id)
+    poissons = [dict(key=k, **FISH[k]) for k in s.fish_keys if k in FISH]
+    photos = (SpotPhoto.query.filter_by(spot_id=key)
               .order_by(SpotPhoto.created_at.desc()).all())
-    return render_template("spot.html", spot=s, poissons=poissons,
-                           photos=photos, fish=FISH)
+    comments = (SpotComment.query.filter_by(spot_key=key)
+                .order_by(SpotComment.created_at.asc()).all())
+    return render_template("spot.html", spot=s, poissons=poissons, photos=photos,
+                           comments=comments, fish=FISH)
 
 
-@app.route("/spots/<spot_id>/photo", methods=["POST"])
+@app.route("/spots/add", methods=["POST"])
 @login_required
-def spot_photo_upload(spot_id):
-    s = SPOT_BY_ID.get(spot_id)
+def spot_add():
+    nom = (request.form.get("nom") or "").strip()
+    try:
+        lat = float(request.form.get("lat"))
+        lon = float(request.form.get("lon"))
+    except (TypeError, ValueError):
+        lat = lon = None
+    if not nom or lat is None or lon is None or not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+        flash("Donne un nom et clique sur la carte pour placer ton spot.", "error")
+        return redirect(url_for("spots"))
+
+    poissons = [k for k in request.form.getlist("poissons") if k in FISH]
+    key = base = _slugify(nom)
+    i = 2
+    while Spot.query.filter_by(key=key).first():
+        key = "%s-%d" % (base, i)
+        i += 1
+    db.session.add(Spot(
+        key=key, nom=nom[:120], lieu=(request.form.get("lieu") or "").strip()[:160],
+        lat=lat, lon=lon, profondeur=(request.form.get("profondeur") or "").strip()[:40],
+        description=(request.form.get("desc") or "").strip()[:1000],
+        poissons=",".join(poissons), created_by=current_user.id, pseudo=current_user.pseudo,
+    ))
+    db.session.commit()
+    flash("Merci ! Ton spot a été ajouté à la carte. 🗺️", "success")
+    return redirect(url_for("spot", key=key))
+
+
+@app.route("/spots/<key>/comment", methods=["POST"])
+@login_required
+def spot_comment_add(key):
+    s = Spot.query.filter_by(key=key).first()
+    if not s:
+        abort(404)
+    texte = (request.form.get("comment") or "").strip()[:1000]
+    if texte:
+        db.session.add(SpotComment(
+            spot_key=key, user_id=current_user.id,
+            pseudo=current_user.pseudo, comment=texte,
+        ))
+        db.session.commit()
+        flash("Ton commentaire a été publié.", "success")
+    return redirect(url_for("spot", key=key))
+
+
+@app.route("/spots/<key>/photo", methods=["POST"])
+@login_required
+def spot_photo_upload(key):
+    s = Spot.query.filter_by(key=key).first()
     if not s:
         abort(404)
     file = request.files.get("photo")
     if not file or not file.filename:
         flash("Choisis une photo à envoyer.", "error")
-        return redirect(url_for("spot", spot_id=spot_id))
+        return redirect(url_for("spot", key=key))
     try:
         from PIL import Image
         img = Image.open(file.stream)
@@ -254,7 +328,7 @@ def spot_photo_upload(spot_id):
         data = buf.getvalue()
     except Exception:
         flash("Fichier image invalide (formats acceptés : JPEG, PNG…).", "error")
-        return redirect(url_for("spot", spot_id=spot_id))
+        return redirect(url_for("spot", key=key))
 
     fish_key = request.form.get("fish_key") or None
     if fish_key not in FISH:
@@ -262,13 +336,13 @@ def spot_photo_upload(spot_id):
     caption = (request.form.get("caption") or "").strip()[:300]
 
     db.session.add(SpotPhoto(
-        spot_id=spot_id, fish_key=fish_key, caption=caption,
+        spot_id=key, fish_key=fish_key, caption=caption,
         mimetype="image/jpeg", data=data,
         user_id=current_user.id, pseudo=current_user.pseudo,
     ))
     db.session.commit()
     flash("Merci ! Ta photo a été ajoutée à la banque du spot. 🐟", "success")
-    return redirect(url_for("spot", spot_id=spot_id))
+    return redirect(url_for("spot", key=key))
 
 
 @app.route("/spot-photo/<int:photo_id>")
@@ -278,6 +352,71 @@ def spot_photo(photo_id):
         abort(404)
     return Response(p.data, mimetype=p.mimetype or "image/jpeg",
                     headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.route("/poissons")
+def poissons():
+    """Catalogue des poissons enrichi par les photos taguées de la communauté."""
+    photos = (SpotPhoto.query.filter(SpotPhoto.fish_key.isnot(None))
+              .order_by(SpotPhoto.created_at.desc()).all())
+    by_fish = {}
+    for p in photos:
+        by_fish.setdefault(p.fish_key, []).append(p)
+    return render_template("poissons.html", fish=FISH, by_fish=by_fish)
+
+
+# --- Modération (admins uniquement) ---
+
+@app.route("/admin/photo/<int:photo_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_photo(photo_id):
+    p = db.session.get(SpotPhoto, photo_id)
+    dest = url_for("spots")
+    if p:
+        dest = url_for("spot", key=p.spot_id)
+        db.session.delete(p)
+        db.session.commit()
+        flash("Photo supprimée.", "success")
+    return redirect(dest)
+
+
+@app.route("/admin/spot-comment/<int:cid>/delete", methods=["POST"])
+@admin_required
+def admin_delete_spot_comment(cid):
+    c = db.session.get(SpotComment, cid)
+    dest = url_for("spots")
+    if c:
+        dest = url_for("spot", key=c.spot_key)
+        db.session.delete(c)
+        db.session.commit()
+        flash("Commentaire supprimé.", "success")
+    return redirect(dest)
+
+
+@app.route("/admin/spot/<key>/delete", methods=["POST"])
+@admin_required
+def admin_delete_spot(key):
+    s = Spot.query.filter_by(key=key).first()
+    if s and s.user_created:
+        SpotPhoto.query.filter_by(spot_id=key).delete()
+        SpotComment.query.filter_by(spot_key=key).delete()
+        db.session.delete(s)
+        db.session.commit()
+        flash("Spot supprimé.", "success")
+    else:
+        flash("Ce spot pré-défini ne peut pas être supprimé.", "error")
+    return redirect(url_for("spots"))
+
+
+@app.route("/admin/question-comment/<int:cid>/delete", methods=["POST"])
+@admin_required
+def admin_delete_question_comment(cid):
+    c = db.session.get(QuestionComment, cid)
+    if c:
+        db.session.delete(c)
+        db.session.commit()
+        flash("Remarque supprimée.", "success")
+    return redirect(url_for("admin_commentaires"))
 
 
 # ---------------------------------------------------------------------------

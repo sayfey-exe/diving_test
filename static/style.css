@@ -490,6 +490,43 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .upload-form input[type=text], .upload-form select, .upload-form input[type=file] { padding: 0.6rem 0.7rem; border: 2px solid var(--border); border-radius: 10px; font: inherit; background: #fff; }
 .upload-form input:focus, .upload-form select:focus { outline: none; border-color: var(--primary); }
 
+/* ---------- Ajout de spot ---------- */
+.add-spot { background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.6rem; margin-bottom: 2rem; }
+.add-spot h2 { margin: 0 0 0.4rem; font-size: 1.3rem; }
+.add-spot-hint { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 600; }
+.add-spot-login { text-align: center; color: var(--ink-soft); margin-bottom: 2rem; }
+.fish-choices { border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 1rem; }
+.fish-choices legend { font-weight: 700; padding: 0 0.4rem; }
+.fish-choice { display: inline-flex; align-items: center; gap: 0.3rem; margin: 0.2rem 0.9rem 0.2rem 0; font-weight: 500; }
+.spot-usertag, .map-popup-tag { display: inline-block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; background: #e7e2ff; color: #5b3fb0; padding: 0.1rem 0.5rem; border-radius: 999px; margin-right: 0.3rem; }
+
+/* ---------- Commentaires de spot ---------- */
+.spot-comments { display: grid; gap: 0.8rem; margin-bottom: 1.3rem; }
+.spot-comment { background: var(--surface-soft); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; }
+.spot-comment-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.3rem; }
+.spot-comment-author { font-weight: 800; color: var(--primary-dark); }
+.spot-comment-date { font-size: 0.82rem; color: var(--ink-soft); }
+.spot-comment p { margin: 0; white-space: pre-wrap; }
+.comment-form { display: grid; gap: 0.6rem; max-width: 640px; }
+.comment-form textarea { width: 100%; border: 2px solid var(--border); border-radius: 10px; padding: 0.7rem; font: inherit; resize: vertical; min-height: 70px; }
+.comment-form textarea:focus { outline: none; border-color: var(--primary); }
+
+/* ---------- Boutons de modération admin ---------- */
+.admin-inline { display: inline; margin: 0; }
+.btn-del { background: #fdeaed; color: var(--danger); border: 1px solid #f4c2cb; border-radius: 8px; padding: 0.35rem 0.7rem; font: inherit; font-weight: 700; cursor: pointer; }
+.btn-del:hover { background: var(--danger); color: #fff; }
+.btn-del-sm { font-size: 0.78rem; padding: 0.2rem 0.5rem; margin-top: 0.3rem; }
+.spot-hero .btn-del { margin-top: 0.8rem; background: rgba(255,255,255,0.15); color: #ffd7dd; border-color: rgba(255,255,255,0.3); }
+.spot-hero .btn-del:hover { background: var(--danger); color: #fff; }
+
+/* ---------- Page poissons ---------- */
+.fish-block { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.4rem 1.6rem; margin-bottom: 1.4rem; }
+.fish-block-head { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1rem; }
+.fish-block-head img { width: 130px; height: 100px; object-fit: cover; border-radius: 12px; flex: 0 0 auto; }
+.fish-block-head h2 { margin: 0 0 0.2rem; }
+.fish-block-head p { margin: 0 0 0.3rem; color: var(--ink-soft); }
+.fish-count { font-size: 0.82rem; font-weight: 700; color: var(--primary-dark); background: var(--surface-soft); padding: 0.15rem 0.6rem; border-radius: 999px; }
+
 /* ---------- Footer ---------- */
 .footer { background: var(--bg); color: #9fbdd6; padding: 1.4rem 0; font-size: 0.85rem; margin-top: auto; }
 .footer p { margin: 0; }

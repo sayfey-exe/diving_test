@@ -9,13 +9,23 @@
 <article class="spot-detail">
   <header class="spot-hero">
     <h1>📍 {{ spot.nom }}</h1>
-    <p class="spot-hero-sub">{{ spot.lieu }} · Profondeur {{ spot.profondeur }}
-       · {{ '%.4f'|format(spot.lat) }}, {{ '%.4f'|format(spot.lon) }}</p>
-    <p>{{ spot.desc }}</p>
+    <p class="spot-hero-sub">
+      {{ spot.lieu }}{% if spot.profondeur %} · Profondeur {{ spot.profondeur }}{% endif %}
+      · {{ '%.4f'|format(spot.lat) }}, {{ '%.4f'|format(spot.lon) }}
+      {% if spot.user_created %}· ajouté par {{ spot.pseudo or 'un plongeur' }}{% endif %}
+    </p>
+    {% if spot.description %}<p>{{ spot.description }}</p>{% endif %}
+    {% if user_is_admin and spot.user_created %}
+    <form method="post" action="{{ url_for('admin_delete_spot', key=spot.key) }}"
+          onsubmit="return confirm('Supprimer ce spot et toutes ses photos/commentaires ?');" class="admin-inline">
+      <button class="btn-del">🗑️ Supprimer ce spot (admin)</button>
+    </form>
+    {% endif %}
   </header>
 
   <section class="spot-section">
     <h2>🐟 Poissons observables ici</h2>
+    {% if poissons %}
     <div class="fish-grid">
       {% for f in poissons %}
       <figure class="fish-card">
@@ -27,6 +37,9 @@
       </figure>
       {% endfor %}
     </div>
+    {% else %}
+    <p class="empty-state">Aucune espèce renseignée pour ce spot.</p>
+    {% endif %}
   </section>
 
   <section class="spot-section">
@@ -40,6 +53,12 @@
           {% if p.fish_key and p.fish_key in fish %}<span class="photo-fish">{{ fish[p.fish_key].nom }}</span>{% endif %}
           {% if p.caption %}<span class="photo-cap">{{ p.caption }}</span>{% endif %}
           <span class="photo-author">📷 {{ p.pseudo or 'Anonyme' }} · {{ p.created_at.strftime('%d/%m/%Y') }}</span>
+          {% if user_is_admin %}
+          <form method="post" action="{{ url_for('admin_delete_photo', photo_id=p.id) }}"
+                onsubmit="return confirm('Supprimer cette photo ?');" class="admin-inline">
+            <button class="btn-del btn-del-sm">🗑️ Supprimer (admin)</button>
+          </form>
+          {% endif %}
         </figcaption>
       </figure>
       {% endfor %}
@@ -52,16 +71,16 @@
   <section class="spot-section spot-upload">
     <h2>➕ Ajouter ta photo à ce spot</h2>
     {% if current_user.is_authenticated %}
-    <form method="post" action="{{ url_for('spot_photo_upload', spot_id=spot.id) }}"
+    <form method="post" action="{{ url_for('spot_photo_upload', key=spot.key) }}"
           enctype="multipart/form-data" class="upload-form">
       <label>Ta photo (JPEG, PNG…)
         <input type="file" name="photo" accept="image/*" required>
       </label>
-      <label>Poisson (optionnel)
+      <label>Espèce (pour enrichir la base des poissons)
         <select name="fish_key">
-          <option value="">— Choisir —</option>
-          {% for k in spot.poissons %}
-          <option value="{{ k }}">{{ fish[k].nom }}</option>
+          <option value="">— Choisir une espèce —</option>
+          {% for k, f in fish.items() %}
+          <option value="{{ k }}">{{ f.nom }}</option>
           {% endfor %}
         </select>
       </label>
@@ -72,9 +91,43 @@
     </form>
     {% else %}
     <p class="empty-state">
-      <a href="{{ url_for('connexion', next=url_for('spot', spot_id=spot.id)) }}">Connecte-toi</a>
+      <a href="{{ url_for('connexion', next=url_for('spot', key=spot.key)) }}">Connecte-toi</a>
       ou <a href="{{ url_for('inscription') }}">crée un compte</a> pour ajouter tes photos.
     </p>
+    {% endif %}
+  </section>
+
+  <section class="spot-section">
+    <h2>💬 Commentaires ({{ comments|length }})</h2>
+    {% if comments %}
+    <div class="spot-comments">
+      {% for c in comments %}
+      <div class="spot-comment">
+        <div class="spot-comment-head">
+          <span class="spot-comment-author">{{ c.pseudo or 'Anonyme' }}</span>
+          <span class="spot-comment-date">{{ c.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+          {% if user_is_admin %}
+          <form method="post" action="{{ url_for('admin_delete_spot_comment', cid=c.id) }}"
+                onsubmit="return confirm('Supprimer ce commentaire ?');" class="admin-inline">
+            <button class="btn-del btn-del-sm">🗑️</button>
+          </form>
+          {% endif %}
+        </div>
+        <p>{{ c.comment }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">Aucun commentaire. Lance la discussion !</p>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+    <form method="post" action="{{ url_for('spot_comment_add', key=spot.key) }}" class="comment-form">
+      <textarea name="comment" required maxlength="1000" placeholder="Partage ton expérience, tes conseils, la visibilité du jour…"></textarea>
+      <button type="submit" class="btn btn-primary">Publier</button>
+    </form>
+    {% else %}
+    <p class="empty-state"><a href="{{ url_for('connexion', next=url_for('spot', key=spot.key)) }}">Connecte-toi</a> pour commenter.</p>
     {% endif %}
   </section>
 </article>

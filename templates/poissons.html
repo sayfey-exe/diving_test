@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Les poissons — Plongée N2{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb"><a href="{{ url_for('spots') }}">Spots</a> <span>/</span> Poissons</nav>
+
+<div class="page-head">
+  <h1>🐟 Les poissons</h1>
+  <p>Le catalogue des espèces. Chaque photo taguée par la communauté enrichit
+     automatiquement la galerie de son espèce.</p>
+</div>
+
+{% for k, f in fish.items() %}
+<section class="fish-block">
+  <div class="fish-block-head">
+    <img src="{{ url_for('static', filename='img/' ~ f.image) }}" alt="{{ f.nom }}">
+    <div>
+      <h2>{{ f.nom }}</h2>
+      <p>{{ f.desc }}</p>
+      <span class="fish-count">{{ by_fish.get(k, [])|length }} photo(s) de la communauté</span>
+    </div>
+  </div>
+  {% if by_fish.get(k) %}
+  <div class="photo-gallery">
+    {% for p in by_fish[k] %}
+    <figure class="photo-item">
+      <a href="{{ url_for('spot', key=p.spot_id) }}">
+        <img src="{{ url_for('spot_photo', photo_id=p.id) }}" alt="{{ f.nom }} par {{ p.pseudo }}" loading="lazy">
+      </a>
+      <figcaption>
+        {% if p.caption %}<span class="photo-cap">{{ p.caption }}</span>{% endif %}
+        <span class="photo-author">📷 {{ p.pseudo or 'Anonyme' }}</span>
+      </figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}
