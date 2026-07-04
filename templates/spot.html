@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ spot.nom }} — Spots de plongée{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('spots') }}">Spots</a> <span>/</span> {{ spot.nom }}
+</nav>
+
+<article class="spot-detail">
+  <header class="spot-hero">
+    <h1>📍 {{ spot.nom }}</h1>
+    <p class="spot-hero-sub">{{ spot.lieu }} · Profondeur {{ spot.profondeur }}
+       · {{ '%.4f'|format(spot.lat) }}, {{ '%.4f'|format(spot.lon) }}</p>
+    <p>{{ spot.desc }}</p>
+  </header>
+
+  <section class="spot-section">
+    <h2>🐟 Poissons observables ici</h2>
+    <div class="fish-grid">
+      {% for f in poissons %}
+      <figure class="fish-card">
+        <img src="{{ url_for('static', filename='img/' ~ f.image) }}" alt="{{ f.nom }}" loading="lazy">
+        <figcaption>
+          <strong>{{ f.nom }}</strong>
+          <span>{{ f.desc }}</span>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="spot-section">
+    <h2>📸 Photos de la communauté ({{ photos|length }})</h2>
+    {% if photos %}
+    <div class="photo-gallery">
+      {% for p in photos %}
+      <figure class="photo-item">
+        <img src="{{ url_for('spot_photo', photo_id=p.id) }}" alt="Photo de {{ p.pseudo }}" loading="lazy">
+        <figcaption>
+          {% if p.fish_key and p.fish_key in fish %}<span class="photo-fish">{{ fish[p.fish_key].nom }}</span>{% endif %}
+          {% if p.caption %}<span class="photo-cap">{{ p.caption }}</span>{% endif %}
+          <span class="photo-author">📷 {{ p.pseudo or 'Anonyme' }} · {{ p.created_at.strftime('%d/%m/%Y') }}</span>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">Aucune photo pour l'instant. Sois le premier à en ajouter une !</p>
+    {% endif %}
+  </section>
+
+  <section class="spot-section spot-upload">
+    <h2>➕ Ajouter ta photo à ce spot</h2>
+    {% if current_user.is_authenticated %}
+    <form method="post" action="{{ url_for('spot_photo_upload', spot_id=spot.id) }}"
+          enctype="multipart/form-data" class="upload-form">
+      <label>Ta photo (JPEG, PNG…)
+        <input type="file" name="photo" accept="image/*" required>
+      </label>
+      <label>Poisson (optionnel)
+        <select name="fish_key">
+          <option value="">— Choisir —</option>
+          {% for k in spot.poissons %}
+          <option value="{{ k }}">{{ fish[k].nom }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Légende (optionnel)
+        <input type="text" name="caption" maxlength="300" placeholder="Ex : croisé à 18 m près du tombant">
+      </label>
+      <button type="submit" class="btn btn-primary">Envoyer ma photo</button>
+    </form>
+    {% else %}
+    <p class="empty-state">
+      <a href="{{ url_for('connexion', next=url_for('spot', spot_id=spot.id)) }}">Connecte-toi</a>
+      ou <a href="{{ url_for('inscription') }}">crée un compte</a> pour ajouter tes photos.
+    </p>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

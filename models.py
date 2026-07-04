@@ -58,6 +58,21 @@ class QuestionComment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class SpotPhoto(db.Model):
+    """Photo de poisson ajoutée par un utilisateur sur un spot de plongée."""
+    __tablename__ = "spot_photos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    spot_id = db.Column(db.String(60), nullable=False, index=True)
+    fish_key = db.Column(db.String(40))          # poisson identifié (optionnel)
+    caption = db.Column(db.String(300))
+    mimetype = db.Column(db.String(40), default="image/jpeg")
+    data = db.Column(db.LargeBinary, nullable=False)   # image redimensionnée
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    pseudo = db.Column(db.String(80))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class ChapterStudy(db.Model):
     __tablename__ = "chapter_studies"
 

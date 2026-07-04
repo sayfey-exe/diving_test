@@ -440,6 +440,56 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
 .comment-question { font-style: italic; color: var(--ink-soft); margin: 0 0 0.4rem; }
 .comment-body { margin: 0; white-space: pre-wrap; }
 
+/* ---------- Spots : carte ---------- */
+.dive-map { height: 460px; width: 100%; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 2rem; z-index: 1; }
+.map-popup strong { color: var(--primary-dark); font-size: 1.05rem; }
+.map-popup-sub { color: var(--ink-soft); font-size: 0.88rem; margin: 0.15rem 0; }
+.map-popup-meta { font-size: 0.85rem; margin: 0.3rem 0 0.5rem; }
+.map-popup-link { font-weight: 700; }
+.spots-list-title { font-size: 1.5rem; margin: 0.5rem 0 1rem; }
+
+/* Grille de spots */
+.spot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+.spot-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.3rem; box-shadow: var(--shadow-sm); color: var(--ink); display: flex; flex-direction: column; transition: transform .12s, box-shadow .15s, border-color .15s; }
+.spot-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--primary); color: var(--ink); }
+.spot-card-top { display: flex; justify-content: space-between; align-items: center; }
+.spot-pin { font-size: 1.6rem; }
+.spot-meta { font-size: 0.8rem; font-weight: 700; color: var(--primary-dark); background: var(--surface-soft); padding: 0.15rem 0.6rem; border-radius: 999px; }
+.spot-card h3 { margin: 0.5rem 0 0.2rem; font-size: 1.2rem; }
+.spot-place { color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 0.7rem; }
+.spot-fish-mini { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.spot-fish-mini img { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+
+/* ---------- Spot : détail ---------- */
+.spot-detail { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.spot-hero { background: linear-gradient(120deg, var(--bg) 0%, #14507d 100%); color: #fff; padding: 2rem; }
+.spot-hero h1 { color: #fff; margin: 0 0 0.3rem; font-size: 1.9rem; }
+.spot-hero-sub { color: #9fd0ee; margin: 0 0 0.7rem; font-size: 0.92rem; }
+.spot-hero p { color: #d6ebf8; margin: 0; }
+.spot-section { padding: 1.6rem 2rem; border-top: 1px solid var(--border); }
+.spot-section h2 { font-size: 1.35rem; margin: 0 0 1rem; }
+
+.fish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+.fish-card { margin: 0; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.fish-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
+.fish-card figcaption { padding: 0.7rem 0.9rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.fish-card figcaption strong { color: var(--primary-dark); }
+.fish-card figcaption span { font-size: 0.88rem; color: var(--ink-soft); }
+
+.photo-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.photo-item { margin: 0; background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); }
+.photo-item img { width: 100%; height: 180px; object-fit: cover; display: block; }
+.photo-item figcaption { padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.photo-fish { font-weight: 800; color: var(--primary-dark); font-size: 0.9rem; }
+.photo-cap { font-size: 0.9rem; }
+.photo-author { font-size: 0.8rem; color: var(--ink-soft); }
+
+.spot-upload { background: var(--surface-soft); }
+.upload-form { display: grid; gap: 1rem; max-width: 520px; }
+.upload-form label { display: grid; gap: 0.3rem; font-weight: 700; font-size: 0.95rem; }
+.upload-form input[type=text], .upload-form select, .upload-form input[type=file] { padding: 0.6rem 0.7rem; border: 2px solid var(--border); border-radius: 10px; font: inherit; background: #fff; }
+.upload-form input:focus, .upload-form select:focus { outline: none; border-color: var(--primary); }
+
 /* ---------- Footer ---------- */
 .footer { background: var(--bg); color: #9fbdd6; padding: 1.4rem 0; font-size: 0.85rem; margin-top: auto; }
 .footer p { margin: 0; }

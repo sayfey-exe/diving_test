@@ -12,6 +12,7 @@ Application web Flask permettant aux élèves Niveau 2 de réviser :
 """
 
 import os
+import io
 import ssl
 import smtplib
 import logging
@@ -19,7 +20,7 @@ from email.message import EmailMessage
 
 from flask import (
     Flask, render_template, abort, request, jsonify, session,
-    redirect, url_for, flash,
+    redirect, url_for, flash, Response,
 )
 from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user,
@@ -31,7 +32,8 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from data.content import CHAPITRES, HINTS, PASCAL
 from data.questions import QUESTION_BANK, QUESTION_BY_ID
 from data.exercices import EXERCICES, NOTE_TABLES
-from models import db, User, TestResult, ChapterStudy, QuestionComment
+from data.spots import SPOTS, SPOT_BY_ID, FISH
+from models import db, User, TestResult, ChapterStudy, QuestionComment, SpotPhoto
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -44,6 +46,7 @@ if db_url.startswith("postgres://"):  # compat anciens schémas Heroku/Render
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 Mo max par upload
 
 # Journal de démarrage : indique clairement la base utilisée. Sur un hébergeur
 # au disque éphémère (ex. Render gratuit), SQLite est REMIS À ZÉRO à chaque
@@ -194,6 +197,87 @@ def chapitre(slug):
         hints=HINTS.get(chap["num"], []),
         pascal=PASCAL,
     )
+
+
+# ---------------------------------------------------------------------------
+# Spots de plongée (carte + banque de photos communautaire)
+# ---------------------------------------------------------------------------
+
+def _spot_photo_counts():
+    rows = (db.session.query(SpotPhoto.spot_id, func.count(SpotPhoto.id))
+            .group_by(SpotPhoto.spot_id).all())
+    return {sid: n for sid, n in rows}
+
+
+@app.route("/spots")
+def spots():
+    counts = _spot_photo_counts()
+    spots_json = [
+        {"id": s["id"], "nom": s["nom"], "lieu": s["lieu"],
+         "lat": s["lat"], "lon": s["lon"],
+         "nb_poissons": len(s["poissons"]), "nb_photos": counts.get(s["id"], 0)}
+        for s in SPOTS
+    ]
+    return render_template("spots.html", spots=SPOTS, spots_json=spots_json,
+                           counts=counts, fish=FISH)
+
+
+@app.route("/spots/<spot_id>")
+def spot(spot_id):
+    s = SPOT_BY_ID.get(spot_id)
+    if not s:
+        abort(404)
+    poissons = [dict(key=k, **FISH[k]) for k in s["poissons"] if k in FISH]
+    photos = (SpotPhoto.query.filter_by(spot_id=spot_id)
+              .order_by(SpotPhoto.created_at.desc()).all())
+    return render_template("spot.html", spot=s, poissons=poissons,
+                           photos=photos, fish=FISH)
+
+
+@app.route("/spots/<spot_id>/photo", methods=["POST"])
+@login_required
+def spot_photo_upload(spot_id):
+    s = SPOT_BY_ID.get(spot_id)
+    if not s:
+        abort(404)
+    file = request.files.get("photo")
+    if not file or not file.filename:
+        flash("Choisis une photo à envoyer.", "error")
+        return redirect(url_for("spot", spot_id=spot_id))
+    try:
+        from PIL import Image
+        img = Image.open(file.stream)
+        img = img.convert("RGB")
+        img.thumbnail((1280, 1280))
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=82, optimize=True)
+        data = buf.getvalue()
+    except Exception:
+        flash("Fichier image invalide (formats acceptés : JPEG, PNG…).", "error")
+        return redirect(url_for("spot", spot_id=spot_id))
+
+    fish_key = request.form.get("fish_key") or None
+    if fish_key not in FISH:
+        fish_key = None
+    caption = (request.form.get("caption") or "").strip()[:300]
+
+    db.session.add(SpotPhoto(
+        spot_id=spot_id, fish_key=fish_key, caption=caption,
+        mimetype="image/jpeg", data=data,
+        user_id=current_user.id, pseudo=current_user.pseudo,
+    ))
+    db.session.commit()
+    flash("Merci ! Ta photo a été ajoutée à la banque du spot. 🐟", "success")
+    return redirect(url_for("spot", spot_id=spot_id))
+
+
+@app.route("/spot-photo/<int:photo_id>")
+def spot_photo(photo_id):
+    p = db.session.get(SpotPhoto, photo_id)
+    if not p:
+        abort(404)
+    return Response(p.data, mimetype=p.mimetype or "image/jpeg",
+                    headers={"Cache-Control": "public, max-age=86400"})
 
 
 # ---------------------------------------------------------------------------

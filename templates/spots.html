@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Spots de plongée — Plongée N2{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>🗺️ Spots de plongée</h1>
+  <p>Explore la carte, zoome sur un spot où des plongeurs sont passés, découvre les
+     poissons qu'on y trouve — et ajoute tes propres photos !</p>
+</div>
+
+<div id="map" class="dive-map"
+     data-spots='{{ spots_json|tojson }}'
+     data-spot-url="{{ url_for('spot', spot_id='__ID__') }}"></div>
+
+<h2 class="spots-list-title">Tous les spots</h2>
+<div class="spot-grid">
+  {% for s in spots %}
+  <a class="spot-card" href="{{ url_for('spot', spot_id=s.id) }}">
+    <div class="spot-card-top">
+      <span class="spot-pin">📍</span>
+      <span class="spot-meta">{{ counts.get(s.id, 0) }} photo{{ 's' if counts.get(s.id,0) != 1 else '' }}</span>
+    </div>
+    <h3>{{ s.nom }}</h3>
+    <p class="spot-place">{{ s.lieu }} · {{ s.profondeur }}</p>
+    <div class="spot-fish-mini">
+      {% for k in s.poissons %}
+      <img src="{{ url_for('static', filename='img/' ~ fish[k].image) }}" alt="{{ fish[k].nom }}" title="{{ fish[k].nom }}">
+      {% endfor %}
+    </div>
+    <span class="feature-link">Voir le spot →</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script src="{{ url_for('static', filename='spots.js') }}"></script>
+{% endblock %}

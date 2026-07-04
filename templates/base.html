@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head %}{% endblock %}
 </head>
 <body>
   <header class="topbar">
@@ -19,6 +20,7 @@
         <a href="{{ url_for('cours') }}">Cours</a>
         <a href="{{ url_for('test', mode='blanc') }}">Test blanc</a>
         <a href="{{ url_for('test', mode='examen') }}">Test examen</a>
+        <a href="{{ url_for('spots') }}">🗺️ Spots</a>
         <a href="{{ url_for('classement') }}">🏆 Classement</a>
         {% if user_is_admin %}
         <a class="nav-admin" href="{{ url_for('admin') }}">🛡️ Admin</a>
