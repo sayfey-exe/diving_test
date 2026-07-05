@@ -1,8 +1,13 @@
-# 🤿 Plongée N2 — Application de révision
+# 🤿 Palanquée — La plongée pour tous
 
-Application web (Flask) pour aider les élèves à réviser et à s'entraîner au
-**brevet Plongeur Autonome Niveau II (FFESSM)**, d'après le cours théorique
-MPS 2011 (tables MN90).
+Application web (Flask) ouverte à **tous les plongeurs, quel que soit leur
+niveau** : réviser la théorie, s'entraîner avec des quiz, et explorer une carte
+communautaire de spots. Le contenu théorique suit le programme **FFESSM**
+(cours MPS 2011, tables MN90) — idéal pour préparer un brevet comme pour
+entretenir ses connaissances.
+
+L'onglet **« Réviser & se tester »** regroupe en un seul endroit les fiches de
+théorie et les quiz (entraînement corrigé ou mode examen chronométré).
 
 ## Fonctionnalités
 

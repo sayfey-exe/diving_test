@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Mon profil — Plongée N2{% endblock %}
+{% block title %}Mon profil — Palanquée{% endblock %}
 
 {% block content %}
 <div class="page-head">
@@ -76,7 +76,7 @@
           <td>{{ r.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
           <td>
             <span class="test-badge {{ 'badge-blanc' if r.mode == 'blanc' else 'badge-examen' }}">
-              {{ 'Test blanc' if r.mode == 'blanc' else 'Test examen' }}
+              {{ 'Entraînement' if r.mode == 'blanc' else 'Examen' }}
             </span>
           </td>
           <td>{{ r.score }} / {{ r.total }}</td>
@@ -88,7 +88,7 @@
   </div>
   {% else %}
   <p class="empty-state">Tu n'as pas encore passé de test.
-     <a href="{{ url_for('test', mode='blanc') }}">Commence un test blanc →</a></p>
+     <a href="{{ url_for('test', mode='blanc') }}">Commence un quiz →</a></p>
   {% endif %}
 </section>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ "Test blanc" if mode == "blanc" else "Test examen" }} — Plongée N2{% endblock %}
+{% block title %}{{ "Quiz d'entraînement" if mode == "blanc" else "Mode examen" }} — Palanquée{% endblock %}
 
 {% block content %}
 <div id="test-app"
@@ -10,17 +10,17 @@
   <!-- Écran d'accueil du test -->
   <section id="test-intro" class="test-intro">
     {% if mode == "blanc" %}
-    <span class="test-badge badge-blanc">Test blanc</span>
-    <h1>📝 Test blanc — {{ nb_questions }} questions</h1>
+    <span class="test-badge badge-blanc">Entraînement</span>
+    <h1>📝 Quiz d'entraînement — {{ nb_questions }} questions</h1>
     <ul class="test-rules">
       <li>✔ {{ nb_questions }} questions tirées au sort dans tout le programme.</li>
       <li>✔ Navigation libre : tu peux <strong>passer</strong> une question et y revenir.</li>
-      <li>✔ <strong>Correction détaillée</strong> à la fin, avec l'explication et le chapitre concerné.</li>
+      <li>✔ <strong>Correction détaillée</strong> à la fin, avec l'explication et le thème concerné.</li>
       <li>✔ Pas de chronomètre : prends le temps de bien réfléchir.</li>
     </ul>
     {% else %}
-    <span class="test-badge badge-examen">Test examen</span>
-    <h1>⏱️ Test examen — {{ nb_questions }} questions</h1>
+    <span class="test-badge badge-examen">Mode examen</span>
+    <h1>⏱️ Mode examen — {{ nb_questions }} questions</h1>
     <ul class="test-rules">
       <li>✔ {{ nb_questions }} questions en conditions réelles.</li>
       <li>⏱ <strong>Chronomètre : {{ duree_min }} minutes.</strong> Le test se termine automatiquement à la fin du temps.</li>

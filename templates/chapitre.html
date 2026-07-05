@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}{{ chap.num }}. {{ chap.title }} — Plongée N2{% endblock %}
+{% block title %}{{ chap.num }}. {{ chap.title }} — Palanquée{% endblock %}
 
 {% block content %}
 <nav class="breadcrumb">
-  <a href="{{ url_for('cours') }}">Cours</a> <span>/</span> Chapitre {{ chap.num }}
+  <a href="{{ url_for('apprendre') }}">Réviser &amp; se tester</a> <span>/</span> Fiche {{ chap.num }}
 </nav>
 
 <article class="fiche">
@@ -117,7 +117,7 @@
     {% if suivant %}
     <a class="btn btn-primary" href="{{ url_for('chapitre', slug=suivant.slug) }}">{{ suivant.title }} →</a>
     {% else %}
-    <a class="btn btn-primary" href="{{ url_for('test', mode='blanc') }}">Passer au test blanc →</a>
+    <a class="btn btn-primary" href="{{ url_for('test', mode='blanc') }}">Passer au quiz →</a>
     {% endif %}
   </nav>
 </article>

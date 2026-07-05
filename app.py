@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Plongée N2 — Application de révision (FFESSM / tables MN90).
+Palanquée — La plongée pour tous (théorie, entraînement et communauté).
 
-Application web Flask permettant aux élèves Niveau 2 de réviser :
-  - des fiches de cours (résumé par chapitre, images, exercices corrigés
-    et 3 questions d'auto-évaluation)
-  - un "test blanc" (40 QCM avec correction détaillée, navigation libre)
-  - un "test examen" (40 QCM chronométrés, sans correction)
-  - des astuces pour réussir l'examen
-  - un compte personnel : suivi des chapitres étudiés et historique des tests
+Application web Flask ouverte à tous les plongeurs, quel que soit leur niveau :
+  - des fiches de théorie (résumé par thème, images, exercices corrigés et
+    3 questions d'auto-évaluation) suivant le programme FFESSM / tables MN90
+  - un quiz d'entraînement (QCM avec correction détaillée, navigation libre)
+  - un mode examen (QCM chronométrés, sans correction)
+  - une carte communautaire des spots avec photos et poissons observés
+  - un compte personnel : suivi des fiches vues et historique des scores
 """
 
 import os
@@ -184,10 +184,24 @@ def index():
     )
 
 
+@app.route("/apprendre")
+def apprendre():
+    """Espace unique : réviser la théorie ET s'entraîner (tests)."""
+    studied = _studied_slugs()
+    return render_template(
+        "apprendre.html",
+        chapitres=CHAPITRES,
+        studied=studied,
+        nb_questions=len(QUESTION_BANK),
+        nb_test=NB_QUESTIONS_TEST,
+        duree_min=DUREE_EXAMEN_MIN,
+    )
+
+
 @app.route("/cours")
 def cours():
-    studied = _studied_slugs()
-    return render_template("cours.html", chapitres=CHAPITRES, studied=studied)
+    # Ancien onglet « Cours » : désormais fusionné avec les tests.
+    return redirect(url_for("apprendre"))
 
 
 @app.route("/cours/<slug>")
@@ -491,7 +505,7 @@ def mot_de_passe_oublie():
             lien = url_for("reinitialiser", token=token, _external=True)
             corps = (
                 "Bonjour %s,\n\n"
-                "Tu as demandé à réinitialiser ton mot de passe sur Plongée N2.\n"
+                "Tu as demandé à réinitialiser ton mot de passe sur Palanquée.\n"
                 "Clique sur ce lien (valable 1 heure) pour choisir un nouveau "
                 "mot de passe :\n\n%s\n\n"
                 "Si tu n'es pas à l'origine de cette demande, ignore cet e-mail."
@@ -499,7 +513,7 @@ def mot_de_passe_oublie():
             )
             envoye = send_email(
                 user.email,
-                "Réinitialisation de ton mot de passe — Plongée N2",
+                "Réinitialisation de ton mot de passe — Palanquée",
                 corps,
             )
             # En local (debug) sans SMTP configuré, on affiche le lien pour tester.

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Réviser & se tester — Palanquée{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>🎓 Réviser &amp; se tester</h1>
+  <p>Les fondamentaux théoriques de la plongée (physique, décompression, sécurité,
+     matériel…) et des quiz pour vérifier que c'est acquis. Utile pour préparer un
+     brevet comme pour entretenir ses connaissances, quel que soit ton niveau.</p>
+</div>
+
+<section class="learn-tests">
+  <h2 class="section-title">📝 Se tester</h2>
+  <div class="cards-row">
+    <div class="feature-card feature-card-static">
+      <div class="feature-icon">📝</div>
+      <h3>Quiz d'entraînement</h3>
+      <p>{{ nb_test }} questions tirées au sort dans tout le programme. Navigation libre,
+         tu peux passer une question, puis correction détaillée à la fin.</p>
+      <a class="btn btn-primary" href="{{ url_for('test', mode='blanc') }}">Démarrer le quiz →</a>
+    </div>
+    <div class="feature-card feature-card-static">
+      <div class="feature-icon">⏱️</div>
+      <h3>Mode examen</h3>
+      <p>{{ nb_test }} questions chronométrées ({{ duree_min }} min), sans correction pendant
+         l'épreuve : juste ton score et ton bilan par thème à la fin.</p>
+      <a class="btn btn-ghost" href="{{ url_for('test', mode='examen') }}">Passer en mode examen →</a>
+    </div>
+  </div>
+  <p class="learn-hint">💡 {{ nb_questions }} questions au total, du niveau débutant au niveau confirmé.
+     Tes scores sont enregistrés dans ton <a href="{{ url_for('profil') if current_user.is_authenticated else url_for('connexion') }}">espace personnel</a>.</p>
+</section>
+
+<section class="learn-cours">
+  <h2 class="section-title">📚 Réviser la théorie</h2>
+  <p class="section-sub">15 fiches claires, chacune avec l'essentiel à retenir, les astuces de
+     Pascal le Mérou 🐟, des exercices corrigés et 3 questions d'auto-évaluation.
+     Le contenu suit le programme théorique du Niveau 2 (FFESSM).</p>
+  <div class="course-grid">
+    {% for c in chapitres %}
+    <a class="course-card{% if c.slug in studied %} course-card-done{% endif %}" href="{{ url_for('chapitre', slug=c.slug) }}">
+      <div class="course-card-top">
+        <span class="course-icon">{{ c.icon }}</span>
+        <span class="course-num">Fiche {{ c.num }}{% if c.slug in studied %} · ✓ vue{% endif %}</span>
+      </div>
+      <h3>{{ c.title }}</h3>
+      <p>{{ c.accroche }}</p>
+      <span class="feature-link">Réviser →</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
