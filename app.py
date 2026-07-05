@@ -14,6 +14,7 @@ Application web Flask ouverte à tous les plongeurs, quel que soit leur niveau :
 import os
 import io
 import ssl
+import secrets
 import smtplib
 import logging
 from email.message import EmailMessage
@@ -26,8 +27,9 @@ from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user,
 )
 from functools import wraps
-from sqlalchemy import func
+from sqlalchemy import func, inspect as sa_inspect, text
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+from authlib.integrations.flask_client import OAuth
 
 from data.content import CHAPITRES, HINTS, PASCAL
 from data.questions import QUESTION_BANK, QUESTION_BY_ID
@@ -72,6 +74,44 @@ login_manager = LoginManager(app)
 login_manager.login_view = "connexion"
 login_manager.login_message = "Connecte-toi pour accéder à ton espace personnel."
 
+# --- Connexion via Google / Facebook (OAuth 2) ---
+# Activée seulement si les identifiants sont fournis en variables d'environnement.
+oauth = OAuth(app)
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+FACEBOOK_CLIENT_ID = os.environ.get("FACEBOOK_CLIENT_ID")
+FACEBOOK_CLIENT_SECRET = os.environ.get("FACEBOOK_CLIENT_SECRET")
+
+if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    oauth.register(
+        name="google",
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"},
+    )
+if FACEBOOK_CLIENT_ID and FACEBOOK_CLIENT_SECRET:
+    oauth.register(
+        name="facebook",
+        client_id=FACEBOOK_CLIENT_ID,
+        client_secret=FACEBOOK_CLIENT_SECRET,
+        access_token_url="https://graph.facebook.com/v18.0/oauth/access_token",
+        authorize_url="https://www.facebook.com/v18.0/dialog/oauth",
+        api_base_url="https://graph.facebook.com/v18.0/",
+        client_kwargs={"scope": "email public_profile"},
+    )
+
+
+def configured_oauth_providers():
+    """Liste [(clé, libellé)] des fournisseurs OAuth configurés."""
+    provs = []
+    if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+        provs.append(("google", "Google"))
+    if FACEBOOK_CLIENT_ID and FACEBOOK_CLIENT_SECRET:
+        provs.append(("facebook", "Facebook"))
+    return provs
+
+
 NB_QUESTIONS_TEST = 40
 DUREE_EXAMEN_MIN = 40  # minutes pour le mode examen
 
@@ -92,10 +132,15 @@ MAIL_PORT = int(os.environ.get("MAIL_PORT", "587"))
 MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
 MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
 MAIL_SENDER = os.environ.get("MAIL_SENDER", MAIL_USERNAME or "no-reply@plongee-n2")
-MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", "").lower() in ("1", "true", "yes")
+# SSL implicite (port 465) : activé explicitement, ou déduit du port 465.
+MAIL_USE_SSL = (os.environ.get("MAIL_USE_SSL", "").lower() in ("1", "true", "yes")
+                or MAIL_PORT == 465)
+MAIL_TIMEOUT = int(os.environ.get("MAIL_TIMEOUT", "15"))
 
 reset_serializer = URLSafeTimedSerializer(app.secret_key, salt="password-reset")
-RESET_MAX_AGE = 3600  # 1 heure
+verify_serializer = URLSafeTimedSerializer(app.secret_key, salt="email-verify")
+RESET_MAX_AGE = 3600           # 1 heure
+VERIFY_MAX_AGE = 7 * 24 * 3600  # 7 jours
 
 
 def mail_configured():
@@ -103,13 +148,16 @@ def mail_configured():
 
 
 def send_email(destinataire, sujet, corps):
-    """Envoie un e-mail. Retourne True si envoyé, False sinon (et journalise)."""
+    """Envoie un e-mail. Retourne (True, None) si envoyé, sinon (False, message)."""
     if not mail_configured():
+        manque = [n for n, v in (("MAIL_SERVER", MAIL_SERVER),
+                                 ("MAIL_USERNAME", MAIL_USERNAME),
+                                 ("MAIL_PASSWORD", MAIL_PASSWORD)) if not v]
         app.logger.warning(
-            "E-mail non configuré (MAIL_SERVER/MAIL_USERNAME/MAIL_PASSWORD). "
-            "Message destiné à %s NON envoyé. Contenu :\n%s", destinataire, corps,
+            "E-mail non configuré (variables manquantes : %s). Message destiné à "
+            "%s NON envoyé. Contenu :\n%s", ", ".join(manque), destinataire, corps,
         )
-        return False
+        return False, "e-mail non configuré (%s manquant)" % ", ".join(manque)
     msg = EmailMessage()
     msg["Subject"] = sujet
     msg["From"] = MAIL_SENDER
@@ -118,18 +166,43 @@ def send_email(destinataire, sujet, corps):
     try:
         ctx = ssl.create_default_context()
         if MAIL_USE_SSL:
-            with smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT, context=ctx) as s:
+            with smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT, context=ctx,
+                                  timeout=MAIL_TIMEOUT) as s:
                 s.login(MAIL_USERNAME, MAIL_PASSWORD)
                 s.send_message(msg)
         else:
-            with smtplib.SMTP(MAIL_SERVER, MAIL_PORT) as s:
+            with smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=MAIL_TIMEOUT) as s:
+                s.ehlo()
                 s.starttls(context=ctx)
                 s.login(MAIL_USERNAME, MAIL_PASSWORD)
                 s.send_message(msg)
-        return True
+        app.logger.info("E-mail « %s » envoyé à %s.", sujet, destinataire)
+        return True, None
     except Exception as exc:  # noqa: BLE001 (on journalise toute erreur SMTP)
         app.logger.error("Échec d'envoi d'e-mail à %s : %s", destinataire, exc)
-        return False
+        return False, str(exc)
+
+
+if not mail_configured():
+    app.logger.warning(
+        "E-mails NON configurés : la confirmation d'adresse et la réinitialisation "
+        "de mot de passe ne seront PAS envoyées. Définis MAIL_SERVER, MAIL_USERNAME "
+        "et MAIL_PASSWORD (voir README, section « envoi d'e-mail »)."
+    )
+
+
+def send_verification_email(user):
+    """Envoie l'e-mail de confirmation d'adresse. Retourne (ok, erreur)."""
+    token = verify_serializer.dumps(user.email)
+    lien = url_for("verifier_email", token=token, _external=True)
+    corps = (
+        "Bonjour %s,\n\n"
+        "Bienvenue sur Palanquée ! Confirme ton adresse e-mail en cliquant sur "
+        "ce lien (valable 7 jours) :\n\n%s\n\n"
+        "Si tu n'es pas à l'origine de cette inscription, ignore cet e-mail."
+        % (user.pseudo, lien)
+    )
+    return send_email(user.email, "Confirme ton adresse — Palanquée", corps)
 
 
 @login_manager.user_loader
@@ -206,8 +279,35 @@ def species_photo_url(sp):
     return ""
 
 
+def _migrate_schema():
+    """Ajoute les colonnes récentes aux bases existantes (create_all n'ALTER pas)."""
+    insp = sa_inspect(db.engine)
+    if "users" not in insp.get_table_names():
+        return
+    cols = {c["name"] for c in insp.get_columns("users")}
+    dialect = db.engine.dialect.name
+    bool_default = "FALSE" if dialect == "postgresql" else "0"
+    stmts = []
+    if "email_verified" not in cols:
+        stmts.append("ALTER TABLE users ADD COLUMN email_verified BOOLEAN NOT NULL "
+                     "DEFAULT %s" % bool_default)
+    if "oauth_provider" not in cols:
+        stmts.append("ALTER TABLE users ADD COLUMN oauth_provider VARCHAR(20)")
+    # Les comptes OAuth n'ont pas de mot de passe : la colonne doit être nullable.
+    if dialect == "postgresql":
+        stmts.append("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
+    for s in stmts:
+        try:
+            db.session.execute(text(s))
+            db.session.commit()
+        except Exception as exc:  # noqa: BLE001
+            db.session.rollback()
+            app.logger.info("Migration ignorée (%s) : %s", s.split(" ADD")[0], exc)
+
+
 with app.app_context():
     db.create_all()
+    _migrate_schema()
     _seed_spots()
     _seed_species()
 
@@ -573,14 +673,12 @@ def admin_delete_spot_comment(cid):
 @admin_required
 def admin_delete_spot(key):
     s = Spot.query.filter_by(key=key).first()
-    if s and s.user_created:
+    if s:
         SpotPhoto.query.filter_by(spot_id=key).delete()
         SpotComment.query.filter_by(spot_key=key).delete()
         db.session.delete(s)
         db.session.commit()
         flash("Spot supprimé.", "success")
-    else:
-        flash("Ce spot pré-défini ne peut pas être supprimé.", "error")
     return redirect(url_for("spots"))
 
 
@@ -681,15 +779,28 @@ def inscription():
                 flash(e, "error")
             return render_template("inscription.html", pseudo=pseudo, email=email)
 
-        user = User(email=email, pseudo=pseudo)
+        user = User(email=email, pseudo=pseudo, email_verified=False)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
         login_user(user)
-        flash("Bienvenue %s ! Ton compte est créé." % pseudo, "success")
+
+        ok, err = send_verification_email(user)
+        if ok:
+            flash("Bienvenue %s ! Un e-mail de confirmation vient d'être envoyé à "
+                  "%s." % (pseudo, email), "success")
+        elif app.debug:
+            token = verify_serializer.dumps(user.email)
+            lien = url_for("verifier_email", token=token, _external=True)
+            flash("Compte créé. E-mail non configuré (mode test) — lien de "
+                  "confirmation : %s" % lien, "success")
+        else:
+            flash("Bienvenue %s ! Ton compte est créé. (L'e-mail de confirmation "
+                  "n'a pas pu être envoyé — tu pourras le renvoyer depuis ton "
+                  "profil.)" % pseudo, "success")
         return redirect(url_for("profil"))
 
-    return render_template("inscription.html")
+    return render_template("inscription.html", providers=configured_oauth_providers())
 
 
 @app.route("/connexion", methods=["GET", "POST"])
@@ -706,8 +817,9 @@ def connexion():
             next_page = request.args.get("next")
             return redirect(next_page or url_for("profil"))
         flash("E-mail ou mot de passe incorrect.", "error")
-        return render_template("connexion.html", email=email)
-    return render_template("connexion.html")
+        return render_template("connexion.html", email=email,
+                               providers=configured_oauth_providers())
+    return render_template("connexion.html", providers=configured_oauth_providers())
 
 
 @app.route("/mot-de-passe-oublie", methods=["GET", "POST"])
@@ -728,7 +840,7 @@ def mot_de_passe_oublie():
                 "Si tu n'es pas à l'origine de cette demande, ignore cet e-mail."
                 % (user.pseudo, lien)
             )
-            envoye = send_email(
+            envoye, err = send_email(
                 user.email,
                 "Réinitialisation de ton mot de passe — Palanquée",
                 corps,
@@ -773,6 +885,111 @@ def reinitialiser(token):
             flash("Mot de passe mis à jour ! Tu peux te connecter.", "success")
             return redirect(url_for("connexion"))
     return render_template("reinitialiser.html", token=token)
+
+
+@app.route("/verifier/<token>")
+def verifier_email(token):
+    try:
+        email = verify_serializer.loads(token, max_age=VERIFY_MAX_AGE)
+    except SignatureExpired:
+        flash("Ce lien de confirmation a expiré. Renvoie-en un depuis ton profil.", "error")
+        return redirect(url_for("profil") if current_user.is_authenticated else url_for("connexion"))
+    except BadSignature:
+        flash("Lien de confirmation invalide.", "error")
+        return redirect(url_for("connexion"))
+
+    user = User.query.filter_by(email=email).first()
+    if user and not user.email_verified:
+        user.email_verified = True
+        db.session.commit()
+        flash("Ton adresse e-mail est confirmée ! ✅", "success")
+    elif user:
+        flash("Ton adresse était déjà confirmée.", "success")
+    return redirect(url_for("profil") if current_user.is_authenticated else url_for("connexion"))
+
+
+@app.route("/renvoyer-verification")
+@login_required
+def renvoyer_verification():
+    if current_user.email_verified:
+        flash("Ton adresse est déjà confirmée.", "success")
+        return redirect(url_for("profil"))
+    ok, err = send_verification_email(current_user)
+    if ok:
+        flash("E-mail de confirmation renvoyé à %s." % current_user.email, "success")
+    elif app.debug:
+        token = verify_serializer.dumps(current_user.email)
+        lien = url_for("verifier_email", token=token, _external=True)
+        flash("E-mail non configuré (mode test) — lien : %s" % lien, "success")
+    else:
+        flash("Envoi impossible pour le moment (%s). Réessaie plus tard." % err, "error")
+    return redirect(url_for("profil"))
+
+
+@app.route("/connexion/<provider>")
+def oauth_login(provider):
+    client = oauth.create_client(provider)
+    if client is None:
+        flash("La connexion via %s n'est pas disponible." % provider.capitalize(), "error")
+        return redirect(url_for("connexion"))
+    redirect_uri = url_for("oauth_callback", provider=provider, _external=True)
+    return client.authorize_redirect(redirect_uri)
+
+
+@app.route("/connexion/<provider>/callback")
+def oauth_callback(provider):
+    client = oauth.create_client(provider)
+    if client is None:
+        abort(404)
+    try:
+        token = client.authorize_access_token()
+    except Exception as exc:  # noqa: BLE001
+        app.logger.warning("Échec OAuth %s : %s", provider, exc)
+        flash("La connexion via %s a échoué. Réessaie." % provider.capitalize(), "error")
+        return redirect(url_for("connexion"))
+
+    email = name = None
+    if provider == "google":
+        info = token.get("userinfo")
+        if not info:
+            try:
+                info = client.userinfo()
+            except Exception:  # noqa: BLE001
+                info = {}
+        email = info.get("email")
+        name = info.get("name") or info.get("given_name")
+    else:  # facebook
+        try:
+            info = client.get("me?fields=id,name,email").json()
+        except Exception:  # noqa: BLE001
+            info = {}
+        email = info.get("email")
+        name = info.get("name")
+
+    if not email:
+        flash("Impossible de récupérer ton adresse e-mail depuis %s. "
+              "Vérifie que tu autorises le partage de l'e-mail." % provider.capitalize(), "error")
+        return redirect(url_for("connexion"))
+
+    email = email.strip().lower()
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(
+            email=email, pseudo=(name or email.split("@")[0])[:80],
+            email_verified=True, oauth_provider=provider,
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash("Compte créé via %s. Bienvenue %s !" % (provider.capitalize(), user.pseudo), "success")
+    else:
+        if not user.email_verified:
+            user.email_verified = True  # e-mail garanti par le fournisseur
+        if not user.oauth_provider:
+            user.oauth_provider = provider
+        db.session.commit()
+        flash("Content de te revoir, %s !" % user.pseudo, "success")
+    login_user(user)
+    return redirect(url_for("profil"))
 
 
 @app.route("/deconnexion")
@@ -826,6 +1043,69 @@ def profil():
         global_avg=global_avg,
         nb_joueurs=nb_joueurs,
     )
+
+
+@app.route("/profil/modifier", methods=["GET", "POST"])
+@login_required
+def profil_modifier():
+    user = current_user
+    if request.method == "POST":
+        action = request.form.get("action")
+
+        if action == "infos":
+            pseudo = (request.form.get("pseudo") or "").strip()
+            email = (request.form.get("email") or "").strip().lower()
+            erreurs = []
+            if len(pseudo) < 2:
+                erreurs.append("Le pseudo doit faire au moins 2 caractères.")
+            if "@" not in email or "." not in email:
+                erreurs.append("Adresse e-mail invalide.")
+            autre = User.query.filter_by(email=email).first()
+            if autre and autre.id != user.id:
+                erreurs.append("Cet e-mail est déjà utilisé par un autre compte.")
+            if erreurs:
+                for e in erreurs:
+                    flash(e, "error")
+                return redirect(url_for("profil_modifier"))
+
+            user.pseudo = pseudo
+            if email != user.email:
+                user.email = email
+                user.email_verified = False
+                db.session.commit()
+                ok, err = send_verification_email(user)
+                if ok:
+                    flash("Informations mises à jour. Un e-mail de confirmation a été "
+                          "envoyé à ta nouvelle adresse.", "success")
+                elif app.debug:
+                    token = verify_serializer.dumps(user.email)
+                    flash("Infos mises à jour. E-mail non configuré (test) — lien : %s"
+                          % url_for("verifier_email", token=token, _external=True), "success")
+                else:
+                    flash("Informations mises à jour. (E-mail de confirmation non "
+                          "envoyé — renvoie-le depuis ton profil.)", "success")
+            else:
+                db.session.commit()
+                flash("Informations mises à jour.", "success")
+            return redirect(url_for("profil"))
+
+        if action == "password":
+            actuel = request.form.get("actuel") or ""
+            nouveau = request.form.get("nouveau") or ""
+            nouveau2 = request.form.get("nouveau2") or ""
+            if user.has_password and not user.check_password(actuel):
+                flash("Ton mot de passe actuel est incorrect.", "error")
+            elif len(nouveau) < 6:
+                flash("Le nouveau mot de passe doit faire au moins 6 caractères.", "error")
+            elif nouveau != nouveau2:
+                flash("Les deux mots de passe ne correspondent pas.", "error")
+            else:
+                user.set_password(nouveau)
+                db.session.commit()
+                flash("Mot de passe mis à jour.", "success")
+            return redirect(url_for("profil_modifier"))
+
+    return render_template("profil_modifier.html", user=user)
 
 
 def _num(val, cast):
@@ -947,7 +1227,24 @@ def admin():
     nb_comment = QuestionComment.query.count()
     nb_especes_attente = Species.query.filter_by(validated=False).count()
     return render_template("admin.html", rows=rows, totaux=totaux,
-                           nb_comment=nb_comment, nb_especes_attente=nb_especes_attente)
+                           nb_comment=nb_comment, nb_especes_attente=nb_especes_attente,
+                           mail_ok=mail_configured(), mail_server=MAIL_SERVER)
+
+
+@app.route("/admin/test-email", methods=["POST"])
+@admin_required
+def admin_test_email():
+    dest = (request.form.get("dest") or "").strip() or current_user.email
+    ok, err = send_email(
+        dest, "Test d'envoi — Palanquée",
+        "Ceci est un e-mail de test envoyé depuis l'administration de Palanquée. "
+        "Si tu le reçois, la configuration SMTP fonctionne. ✅",
+    )
+    if ok:
+        flash("E-mail de test envoyé à %s. Vérifie ta boîte (et les spams)." % dest, "success")
+    else:
+        flash("Échec de l'envoi : %s" % err, "error")
+    return redirect(url_for("admin"))
 
 
 @app.route("/admin/commentaires")

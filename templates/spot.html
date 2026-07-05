@@ -18,7 +18,7 @@
     {% if current_user.is_authenticated %}
     <a class="btn btn-ghost btn-sm" href="{{ url_for('carnet', spot=spot.key) }}">📖 Ajouter au carnet</a>
     {% endif %}
-    {% if user_is_admin and spot.user_created %}
+    {% if user_is_admin %}
     <form method="post" action="{{ url_for('admin_delete_spot', key=spot.key) }}"
           onsubmit="return confirm('Supprimer ce spot et toutes ses photos/commentaires ?');" class="admin-inline">
       <button class="btn-del">🗑️ Supprimer ce spot (admin)</button>

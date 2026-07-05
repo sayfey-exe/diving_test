@@ -16,7 +16,10 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     pseudo = db.Column(db.String(80), nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    # Nullable : les comptes créés via Google/Facebook n'ont pas de mot de passe.
+    password_hash = db.Column(db.String(255), nullable=True)
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    oauth_provider = db.Column(db.String(20))   # "google" | "facebook" | None
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     results = db.relationship(
@@ -30,7 +33,13 @@ class User(UserMixin, db.Model):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        if not self.password_hash:
+            return False
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def has_password(self):
+        return bool(self.password_hash)
 
 
 class TestResult(db.Model):

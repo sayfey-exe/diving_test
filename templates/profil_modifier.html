@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Modifier mes informations — Palanquée{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb"><a href="{{ url_for('profil') }}">Profil</a> <span>/</span> Modifier</nav>
+
+<div class="page-head">
+  <h1>✏️ Mes informations</h1>
+  <p>Mets à jour ton pseudo, ton adresse e-mail et ton mot de passe.</p>
+</div>
+
+<section class="edit-card">
+  <h2>Informations personnelles</h2>
+  <form method="post" class="auth-form">
+    <input type="hidden" name="action" value="infos">
+    <label>Pseudo
+      <input type="text" name="pseudo" value="{{ user.pseudo }}" required minlength="2">
+    </label>
+    <label>Adresse e-mail
+      <input type="email" name="email" value="{{ user.email }}" required>
+    </label>
+    <p class="edit-hint">Si tu changes d'adresse, un nouvel e-mail de confirmation sera envoyé.</p>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+  </form>
+</section>
+
+<section class="edit-card">
+  <h2>{{ "Mot de passe" if user.has_password else "Définir un mot de passe" }}</h2>
+  {% if not user.has_password %}
+  <p class="edit-hint">Ton compte a été créé via {{ user.oauth_provider|capitalize }}.
+     Tu peux définir un mot de passe pour aussi te connecter par e-mail.</p>
+  {% endif %}
+  <form method="post" class="auth-form">
+    <input type="hidden" name="action" value="password">
+    {% if user.has_password %}
+    <label>Mot de passe actuel
+      <input type="password" name="actuel" required autocomplete="current-password">
+    </label>
+    {% endif %}
+    <label>Nouveau mot de passe
+      <input type="password" name="nouveau" required minlength="6" autocomplete="new-password">
+    </label>
+    <label>Confirme le nouveau mot de passe
+      <input type="password" name="nouveau2" required minlength="6" autocomplete="new-password">
+    </label>
+    <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
+  </form>
+</section>
+
+<p><a href="{{ url_for('profil') }}">← Retour au profil</a></p>
+{% endblock %}

@@ -14,6 +14,16 @@
     </label>
     <button type="submit" class="btn btn-primary btn-lg">Se connecter</button>
   </form>
+  {% if providers %}
+  <div class="oauth-sep"><span>ou</span></div>
+  <div class="oauth-buttons">
+    {% for key, label in providers %}
+    <a class="btn btn-oauth btn-oauth-{{ key }}" href="{{ url_for('oauth_login', provider=key) }}">
+      Continuer avec {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
   <p class="auth-forgot"><a href="{{ url_for('mot_de_passe_oublie') }}">Mot de passe oublié ?</a></p>
   <p class="auth-switch">Pas encore de compte ? <a href="{{ url_for('inscription') }}">Créer un compte</a></p>
 </div>

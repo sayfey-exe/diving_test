@@ -7,6 +7,24 @@
   <p>Voici ton suivi de révision.</p>
 </div>
 
+<section class="account-panel">
+  <div class="account-info">
+    <h2>Mon compte</h2>
+    <dl>
+      <div><dt>Pseudo</dt><dd>{{ current_user.pseudo }}</dd></div>
+      <div><dt>E-mail</dt><dd>{{ current_user.email }}
+        {% if current_user.email_verified %}<span class="badge-ok">✅ confirmé</span>
+        {% else %}<span class="badge-ko">⚠️ non confirmé</span>
+        <a href="{{ url_for('renvoyer_verification') }}">renvoyer le lien</a>{% endif %}
+      </dd></div>
+      <div><dt>Connexion</dt><dd>
+        {% if current_user.oauth_provider %}via {{ current_user.oauth_provider|capitalize }}{% else %}e-mail + mot de passe{% endif %}
+      </dd></div>
+    </dl>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('profil_modifier') }}">✏️ Modifier mes informations</a>
+</section>
+
 <section class="stats-row">
   <div class="stat-box">
     <span class="stat-num">{{ stats.nb_chap_etudies }} / {{ stats.nb_chap_total }}</span>

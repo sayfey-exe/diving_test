@@ -48,6 +48,12 @@
         </div>
       {% endif %}
     {% endwith %}
+    {% if current_user.is_authenticated and not current_user.email_verified %}
+      <div class="verify-banner">
+        📧 Ton adresse e-mail n'est pas encore confirmée.
+        <a href="{{ url_for('renvoyer_verification') }}">Renvoyer le lien de confirmation</a>
+      </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

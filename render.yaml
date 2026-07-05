@@ -22,3 +22,29 @@ services:
         fromDatabase:
           name: plongee-db
           property: connectionString
+      # --- À renseigner dans l'onglet « Environment » du service (valeurs secrètes) ---
+      - key: ADMIN_EMAILS          # e-mails admin, séparés par des virgules
+        sync: false
+      # E-mails (confirmation d'adresse + mot de passe oublié). Voir README.
+      - key: MAIL_SERVER           # ex. smtp.gmail.com
+        sync: false
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME         # ex. ton.email@gmail.com
+        sync: false
+      - key: MAIL_PASSWORD         # mot de passe d'application (Gmail)
+        sync: false
+      - key: MAIL_SENDER           # optionnel : expéditeur affiché
+        sync: false
+      # Connexion Google / Facebook (optionnelle). Voir README.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FACEBOOK_CLIENT_ID
+        sync: false
+      - key: FACEBOOK_CLIENT_SECRET
+        sync: false
+      # Reconnaissance automatique d'espèces (optionnelle).
+      - key: ANTHROPIC_API_KEY
+        sync: false

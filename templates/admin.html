@@ -30,6 +30,23 @@
   </a>
 </section>
 
+<section class="mail-status">
+  <h2 class="section-title">📧 Envoi d'e-mails</h2>
+  {% if mail_ok %}
+  <p>Configuration SMTP détectée (<code>{{ mail_server }}</code>). Envoie un e-mail de
+     test pour vérifier que tout fonctionne :</p>
+  {% else %}
+  <p class="admin-note">⚠️ Aucune configuration SMTP détectée. Les e-mails de
+     confirmation et de réinitialisation <strong>ne partiront pas</strong>. Définis
+     <code>MAIL_SERVER</code>, <code>MAIL_USERNAME</code> et <code>MAIL_PASSWORD</code>
+     (voir README). Tu peux quand même tenter un test :</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('admin_test_email') }}" class="mail-test-form">
+    <input type="email" name="dest" placeholder="destinataire (défaut : le tien)">
+    <button type="submit" class="btn btn-primary btn-sm">Envoyer un e-mail de test</button>
+  </form>
+</section>
+
 <div class="table-wrap">
   <table class="data-table admin-table">
     <thead>

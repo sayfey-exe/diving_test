@@ -20,6 +20,17 @@
     </label>
     <button type="submit" class="btn btn-primary btn-lg">Créer mon compte</button>
   </form>
+  {% if providers %}
+  <div class="oauth-sep"><span>ou</span></div>
+  <div class="oauth-buttons">
+    {% for key, label in providers %}
+    <a class="btn btn-oauth btn-oauth-{{ key }}" href="{{ url_for('oauth_login', provider=key) }}">
+      S'inscrire avec {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <p class="auth-note">Un e-mail de confirmation te sera envoyé pour valider ton adresse.</p>
   <p class="auth-switch">Déjà un compte ? <a href="{{ url_for('connexion') }}">Se connecter</a></p>
 </div>
 {% endblock %}

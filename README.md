@@ -213,27 +213,76 @@ Sur Render : onglet **Environment** du service web → ajoute la variable
 dans la barre de navigation pour ces comptes. Aucune migration de base n'est
 nécessaire (le statut admin est déterminé par l'e-mail, pas stocké en base).
 
-### Réinitialisation de mot de passe (envoi d'e-mail)
+### E-mails : confirmation d'adresse & mot de passe oublié
 
-La page **« Mot de passe oublié ? »** envoie un **lien de réinitialisation**
-(valable 1 h) à l'adresse du compte. Les mots de passe étant *hachés*, ils ne
-sont jamais renvoyés en clair : on choisit un nouveau mot de passe via le lien.
+Deux e-mails sont envoyés par l'application :
 
-L'envoi d'e-mail se configure avec des variables d'environnement SMTP :
+- **Confirmation d'adresse** — à la création d'un compte (et si l'on change
+  d'e-mail). Un bandeau invite à confirmer tant que ce n'est pas fait ; le lien
+  est valable 7 jours et peut être **renvoyé depuis le profil**.
+- **Mot de passe oublié** — un **lien de réinitialisation** (valable 1 h). Les
+  mots de passe étant *hachés*, ils ne sont jamais renvoyés en clair.
 
-| Variable        | Exemple                    | Rôle                              |
-|-----------------|----------------------------|-----------------------------------|
-| `MAIL_SERVER`   | `smtp.gmail.com`           | serveur SMTP                      |
-| `MAIL_PORT`     | `587`                      | port (587 = TLS, 465 = SSL)       |
-| `MAIL_USERNAME` | `ton.email@gmail.com`      | identifiant SMTP                  |
-| `MAIL_PASSWORD` | *(mot de passe d'application)* | mot de passe SMTP             |
-| `MAIL_SENDER`   | `Plongée N2 <…@gmail.com>` | expéditeur affiché (optionnel)    |
-| `MAIL_USE_SSL`  | `false`                    | `true` pour le port 465           |
+L'envoi se configure avec des variables d'environnement SMTP :
 
-> Avec Gmail, crée un **« mot de passe d'application »** (compte Google →
-> Sécurité → validation en 2 étapes) plutôt que ton mot de passe principal.
-> Sans ces variables, l'e-mail n'est pas envoyé ; en local (mode debug), le
-> lien de réinitialisation s'affiche directement à l'écran pour tester.
+| Variable        | Exemple                       | Rôle                                    |
+|-----------------|-------------------------------|-----------------------------------------|
+| `MAIL_SERVER`   | `smtp.gmail.com`              | serveur SMTP                            |
+| `MAIL_PORT`     | `587`                         | port (587 = TLS/STARTTLS, 465 = SSL)    |
+| `MAIL_USERNAME` | `ton.email@gmail.com`         | identifiant SMTP                        |
+| `MAIL_PASSWORD` | *(mot de passe d'application)*| mot de passe SMTP                       |
+| `MAIL_SENDER`   | `Palanquée <…@gmail.com>`     | expéditeur affiché (optionnel)          |
+| `MAIL_USE_SSL`  | `false`                       | `true` pour le port 465 (auto si port=465) |
+
+#### ⚠️ « Je ne reçois aucun e-mail » — checklist
+
+C'est presque toujours un **problème de configuration SMTP**, pas de code :
+
+1. **Les variables `MAIL_*` sont-elles définies ?** Sans elles, *rien n'est
+   envoyé* (l'app le journalise : `E-mail non configuré…`). Sur Render :
+   onglet **Environment** du service → ajoute les 3 variables au minimum
+   (`MAIL_SERVER`, `MAIL_USERNAME`, `MAIL_PASSWORD`), puis **redeploy**.
+2. **Gmail** : le mot de passe classique **ne marche pas**. Il faut :
+   active la **validation en 2 étapes** sur ton compte Google, puis crée un
+   **« mot de passe d'application »** (Google → Sécurité → Mots de passe des
+   applications) et mets *ce* code de 16 caractères dans `MAIL_PASSWORD`.
+   Utilise `MAIL_SERVER=smtp.gmail.com` et `MAIL_PORT=587`.
+3. **Teste l'envoi** : connecte-toi en admin → page **🛡️ Admin** → section
+   **« 📧 Envoi d'e-mails »** → *Envoyer un e-mail de test*. Le résultat (succès
+   ou **message d'erreur SMTP exact**) s'affiche immédiatement.
+4. **Regarde les spams** et vérifie que `MAIL_SENDER` correspond bien au compte
+   `MAIL_USERNAME` (certains fournisseurs rejettent un expéditeur différent).
+5. En **local (mode debug)** sans SMTP, les liens de confirmation / de
+   réinitialisation s'affichent directement à l'écran pour pouvoir tester.
+
+> 💡 Alternative simple si Gmail pose problème : un service d'e-mail
+> transactionnel gratuit (Brevo/Sendinblue, Mailjet, Resend…) fournit un hôte
+> SMTP et des identifiants dédiés à mettre dans ces mêmes variables.
+
+### Connexion Google / Facebook (optionnelle)
+
+Des boutons **« Continuer avec Google / Facebook »** apparaissent sur les pages
+de connexion et d'inscription **dès que les identifiants OAuth sont fournis**
+(sinon ils sont masqués). Un compte créé par ce biais a son adresse
+**automatiquement confirmée**.
+
+| Variable                 | Où l'obtenir                                             |
+|--------------------------|---------------------------------------------------------|
+| `GOOGLE_CLIENT_ID`       | [Google Cloud Console](https://console.cloud.google.com/) → *APIs & Services* → *Credentials* → *OAuth client ID* (type « Web ») |
+| `GOOGLE_CLIENT_SECRET`   | idem                                                    |
+| `FACEBOOK_CLIENT_ID`     | [Facebook for Developers](https://developers.facebook.com/) → une app → *Facebook Login* |
+| `FACEBOOK_CLIENT_SECRET` | idem                                                    |
+
+**URL de redirection (callback)** à déclarer chez le fournisseur — exactement :
+
+```
+https://TON-DOMAINE/connexion/google/callback
+https://TON-DOMAINE/connexion/facebook/callback
+```
+
+(en local : `http://localhost:5000/connexion/google/callback`). Pense à activer
+le partage de l'**e-mail** dans les autorisations de l'app OAuth, sinon la
+connexion échoue faute d'adresse.
 
 > ℹ️ **Rappel important** : si « l'application ne se souvient plus des comptes »,
 > c'est presque toujours que la base **SQLite éphémère** est utilisée en

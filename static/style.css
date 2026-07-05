@@ -630,3 +630,37 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
   .species-hero-body { padding: 0 1.2rem 1.2rem; }
   .admin-species-card { grid-template-columns: 1fr; }
 }
+
+/* ---------- Authentification : OAuth, vérification, compte ---------- */
+.verify-banner { background: #fff7e6; border: 1px solid #f6dfa8; color: #8a6400; padding: 0.7rem 1rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.95rem; }
+.verify-banner a { color: var(--primary-dark); font-weight: 700; }
+
+.oauth-sep { display: flex; align-items: center; text-align: center; color: var(--ink-soft); margin: 1.1rem 0 0.9rem; font-size: 0.85rem; }
+.oauth-sep::before, .oauth-sep::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.oauth-sep span { padding: 0 0.8rem; }
+.oauth-buttons { display: grid; gap: 0.6rem; }
+.btn-oauth { border: 2px solid var(--border); background: #fff; color: var(--ink); font-weight: 700; }
+.btn-oauth:hover { background: var(--surface-soft); color: var(--ink); }
+.btn-oauth-google { border-color: #d7e0ea; }
+.btn-oauth-google::before { content: "G"; display: inline-flex; width: 20px; height: 20px; margin-right: 0.5rem; align-items: center; justify-content: center; background: #fff; color: #4285F4; font-weight: 800; border-radius: 3px; border: 1px solid #e2e8f0; }
+.btn-oauth-facebook { background: #1877F2; color: #fff; border-color: #1877F2; }
+.btn-oauth-facebook:hover { background: #1466d6; color: #fff; }
+.btn-oauth-facebook::before { content: "f"; display: inline-flex; width: 20px; height: 20px; margin-right: 0.5rem; align-items: center; justify-content: center; font-weight: 800; }
+.auth-note { color: var(--ink-soft); font-size: 0.85rem; margin-top: 0.9rem; text-align: center; }
+
+.account-panel { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.2rem 1.4rem; margin-bottom: 1.4rem; }
+.account-info h2 { margin: 0 0 0.6rem; font-size: 1.1rem; }
+.account-info dl { margin: 0; display: grid; gap: 0.4rem; }
+.account-info dl > div { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.account-info dt { font-weight: 700; color: var(--ink-soft); min-width: 90px; }
+.account-info dd { margin: 0; }
+.badge-ok { color: var(--success); font-weight: 700; font-size: 0.85rem; }
+.badge-ko { color: var(--warn); font-weight: 700; font-size: 0.85rem; }
+
+.edit-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; max-width: 560px; }
+.edit-card h2 { margin: 0 0 0.9rem; font-size: 1.15rem; }
+.edit-hint { color: var(--ink-soft); font-size: 0.88rem; }
+
+.mail-status { margin-top: 1.6rem; }
+.mail-test-form { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-top: 0.6rem; }
+.mail-test-form input { padding: 0.5rem 0.7rem; border: 2px solid var(--border); border-radius: 10px; font: inherit; min-width: 260px; }
