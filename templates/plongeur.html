@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ u.pseudo }} — Plongeur — Palanquée{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb"><a href="{{ url_for('communaute') }}">Communauté</a> <span>/</span> {{ u.pseudo }}</nav>
+
+<header class="profile-hero">
+  <span class="profile-avatar">🤿</span>
+  <div class="profile-hero-body">
+    <h1>{{ u.pseudo }}</h1>
+    <p class="profile-meta">
+      {% if u.niveau %}<span class="profile-badge">{{ u.niveau }}</span>{% endif %}
+      {% if u.ville %}<span>📍 {{ u.ville }}</span>{% endif %}
+      <span>Membre depuis {{ u.created_at.strftime('%m/%Y') if u.created_at else '—' }}</span>
+    </p>
+    {% if u.bio and not prive %}<p class="profile-bio">{{ u.bio }}</p>{% endif %}
+  </div>
+  <div class="profile-actions">
+    {% if est_moi %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('profil_modifier') }}">✏️ Modifier</a>
+    {% elif current_user.is_authenticated %}
+      {% if following_me %}
+      <form method="post" action="{{ url_for('ne_plus_suivre', user_id=u.id) }}">
+        <button class="btn btn-ghost">✓ Abonné</button>
+      </form>
+      {% else %}
+      <form method="post" action="{{ url_for('suivre', user_id=u.id) }}">
+        <button class="btn btn-primary">Suivre</button>
+      </form>
+      {% endif %}
+    {% else %}
+    <a class="btn btn-primary" href="{{ url_for('connexion') }}">Suivre</a>
+    {% endif %}
+  </div>
+</header>
+
+<section class="profile-stats">
+  <div class="pstat"><span class="pstat-num">{{ stats.dives }}</span><span class="pstat-label">plongées</span></div>
+  <div class="pstat"><span class="pstat-num">{{ stats.photos }}</span><span class="pstat-label">photos</span></div>
+  <div class="pstat"><span class="pstat-num">{{ stats.spots }}</span><span class="pstat-label">spots</span></div>
+  <a class="pstat" href="{{ url_for('abonnes', user_id=u.id) }}"><span class="pstat-num">{{ stats.followers }}</span><span class="pstat-label">abonnés</span></a>
+  <a class="pstat" href="{{ url_for('abonnements', user_id=u.id) }}"><span class="pstat-num">{{ stats.following }}</span><span class="pstat-label">abonnements</span></a>
+</section>
+
+{% if prive %}
+<p class="empty-state">🔒 Ce plongeur a choisi de garder son profil privé.</p>
+{% else %}
+
+{% if photos %}
+<section class="profile-section">
+  <h2 class="section-title">📸 Dernières photos</h2>
+  <div class="photo-gallery">
+    {% for p in photos %}
+    <figure class="photo-item">
+      <a href="{{ url_for('spot', key=p.spot_id) }}"><img src="{{ url_for('spot_photo', photo_id=p.id) }}" alt="photo" loading="lazy"></a>
+      {% if p.caption %}<figcaption><span class="photo-cap">{{ p.caption }}</span></figcaption>{% endif %}
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if dives %}
+<section class="profile-section">
+  <h2 class="section-title">🤿 Dernières plongées{% if est_moi %} (dont privées){% endif %}</h2>
+  <div class="carnet-list">
+    {% for l in dives %}
+    <article class="dive-entry">
+      <div class="dive-entry-head">
+        <div class="dive-title">
+          <strong>{% if l.spot_key %}<a href="{{ url_for('spot', key=l.spot_key) }}">{{ l.spot_nom or 'Site' }}</a>{% else %}{{ l.spot_nom or 'Plongée' }}{% endif %}</strong>
+          <span class="dive-date">{{ l.date.strftime('%d/%m/%Y') if l.date else l.created_at.strftime('%d/%m/%Y') }}{% if est_moi and not l.is_public %} · 🔒 privée{% endif %}</span>
+        </div>
+        {% if l.ressenti %}<span class="dive-stars">{{ '★' * l.ressenti }}</span>{% endif %}
+      </div>
+      <div class="dive-facts">
+        {% if l.profondeur_max %}<span>🌊 {{ l.profondeur_max }} m</span>{% endif %}
+        {% if l.duree_min %}<span>⏱️ {{ l.duree_min }} min</span>{% endif %}
+        {% if l.gaz %}<span>🫧 {{ l.gaz }}</span>{% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if spots_added %}
+<section class="profile-section">
+  <h2 class="section-title">📍 Spots ajoutés</h2>
+  <div class="chip-grid">
+    {% for s in spots_added %}
+    <a class="chip" href="{{ url_for('spot', key=s.key) }}"><span class="chip-icon">📍</span> {{ s.nom }}</a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not photos and not dives and not spots_added %}
+<p class="empty-state">Ce plongeur n'a pas encore partagé d'activité.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

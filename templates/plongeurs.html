@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Trouver un binôme — Palanquée{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb"><a href="{{ url_for('communaute') }}">Communauté</a> <span>/</span> Plongeurs</nav>
+
+<div class="page-head">
+  <h1>🧭 Trouver un binôme</h1>
+  <p>Cherche des plongeurs par pseudo, ville/région ou niveau, et abonne-toi
+     pour suivre leurs plongées.</p>
+</div>
+
+<form method="get" class="diver-search">
+  <input type="text" name="q" value="{{ q }}" placeholder="Pseudo ou ville…">
+  <select name="niveau">
+    <option value="">Tous niveaux</option>
+    {% for n in niveaux %}
+    <option value="{{ n }}" {{ 'selected' if n == niveau else '' }}>{{ n }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary">Rechercher</button>
+  {% if q or niveau %}<a class="btn btn-ghost" href="{{ url_for('plongeurs') }}">Réinitialiser</a>{% endif %}
+</form>
+
+{% if divers %}
+<div class="diver-grid">
+  {% for d in divers %}
+  <div class="diver-card">
+    <a href="{{ url_for('plongeur', user_id=d.id) }}" class="diver-card-head">
+      <span class="diver-avatar">🤿</span>
+      <span>
+        <strong>{{ d.pseudo }}</strong>
+        <span class="diver-sub">{% if d.niveau %}{{ d.niveau }}{% endif %}{% if d.ville %} · 📍 {{ d.ville }}{% endif %}</span>
+      </span>
+    </a>
+    {% if d.bio %}<p class="diver-bio">{{ d.bio[:120] }}{% if d.bio|length > 120 %}…{% endif %}</p>{% endif %}
+    <div class="diver-card-foot">
+      <span class="diver-count">{{ counts[d.id][0] }} abonné{{ 's' if counts[d.id][0] != 1 else '' }}</span>
+      {% if current_user.is_authenticated and d.id != current_user.id %}
+        {% if d.id in following %}
+        <form method="post" action="{{ url_for('ne_plus_suivre', user_id=d.id) }}" class="admin-inline">
+          <button class="btn btn-ghost btn-sm">✓ Abonné</button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ url_for('suivre', user_id=d.id) }}" class="admin-inline">
+          <button class="btn btn-primary btn-sm">Suivre</button>
+        </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">Aucun plongeur ne correspond à ta recherche.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Communauté — Palanquée{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>👥 Communauté</h1>
+  <p>Le fil d'actualité des plongeurs : leurs plongées, leurs photos et les spots
+     qu'ils ajoutent. <a href="{{ url_for('plongeurs') }}">Trouver un binôme →</a></p>
+</div>
+
+<div class="community-layout">
+  <section class="feed">
+    {% if scope == 'global' %}
+    <p class="feed-note">
+      {% if current_user.is_authenticated %}
+      Tu ne suis encore personne — voici l'activité récente de la communauté.
+      Abonne-toi à des plongeurs pour personnaliser ton fil.
+      {% else %}
+      Activité récente de la communauté.
+      <a href="{{ url_for('connexion') }}">Connecte-toi</a> pour suivre des plongeurs.
+      {% endif %}
+    </p>
+    {% endif %}
+
+    {% if feed %}
+    {% for it in feed %}
+    <article class="feed-item">
+      <a class="feed-avatar" href="{{ url_for('plongeur', user_id=it.user.id) }}">🤿</a>
+      <div class="feed-body">
+        <p class="feed-line">
+          <a class="feed-user" href="{{ url_for('plongeur', user_id=it.user.id) }}">{{ it.user.pseudo }}</a>
+          {% if it.type == 'dive' %}
+            a plongé à <strong>{{ it.obj.spot_nom or 'un site' }}</strong>
+            {% if it.obj.spot_key %}(<a href="{{ url_for('spot', key=it.obj.spot_key) }}">voir le spot</a>){% endif %}
+          {% elif it.type == 'photo' %}
+            a ajouté une photo{% if it.obj.fish_key %} de <a href="{{ url_for('espece', key=it.obj.fish_key) }}">cette espèce</a>{% endif %}
+            sur <a href="{{ url_for('spot', key=it.obj.spot_id) }}">un spot</a>
+          {% elif it.type == 'spot' %}
+            a ajouté le spot <strong><a href="{{ url_for('spot', key=it.obj.key) }}">{{ it.obj.nom }}</a></strong>
+          {% endif %}
+        </p>
+        {% if it.type == 'dive' %}
+        <div class="feed-facts">
+          {% if it.obj.profondeur_max %}<span>🌊 {{ it.obj.profondeur_max }} m</span>{% endif %}
+          {% if it.obj.duree_min %}<span>⏱️ {{ it.obj.duree_min }} min</span>{% endif %}
+          {% if it.obj.ressenti %}<span class="dive-stars">{{ '★' * it.obj.ressenti }}</span>{% endif %}
+        </div>
+        {% elif it.type == 'photo' %}
+        <a href="{{ url_for('spot', key=it.obj.spot_id) }}" class="feed-photo">
+          <img src="{{ url_for('spot_photo', photo_id=it.obj.id) }}" alt="photo" loading="lazy">
+        </a>
+        {% endif %}
+        <span class="feed-when">{{ it.when.strftime('%d/%m/%Y à %H:%M') }}</span>
+      </div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <p class="empty-state">Pas encore d'activité. Ajoute une plongée, une photo ou un spot !</p>
+    {% endif %}
+  </section>
+
+  <aside class="community-aside">
+    <h2>Plongeurs à suivre</h2>
+    {% if suggestions %}
+    <div class="diver-mini-list">
+      {% for d in suggestions %}
+      <div class="diver-mini">
+        <a href="{{ url_for('plongeur', user_id=d.id) }}" class="diver-mini-main">
+          <span class="diver-mini-avatar">🤿</span>
+          <span>
+            <strong>{{ d.pseudo }}</strong>
+            <span class="diver-mini-sub">{% if d.niveau %}{{ d.niveau }}{% endif %}{% if d.ville %} · {{ d.ville }}{% endif %}</span>
+          </span>
+        </a>
+        {% if current_user.is_authenticated and d.id != current_user.id %}
+        <form method="post" action="{{ url_for('suivre', user_id=d.id) }}" class="admin-inline">
+          <button class="btn btn-primary btn-sm">Suivre</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">Aucune suggestion pour l'instant.</p>
+    {% endif %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('plongeurs') }}">Voir tous les plongeurs →</a>
+  </aside>
+</div>
+{% endblock %}

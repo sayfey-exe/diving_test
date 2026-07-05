@@ -57,7 +57,7 @@
         <figcaption>
           {% if p.fish_key and p.fish_key in fish %}<span class="photo-fish">{{ fish[p.fish_key].nom }}</span>{% endif %}
           {% if p.caption %}<span class="photo-cap">{{ p.caption }}</span>{% endif %}
-          <span class="photo-author">📷 {{ p.pseudo or 'Anonyme' }} · {{ p.created_at.strftime('%d/%m/%Y') }}</span>
+          <span class="photo-author">📷 {% if p.user_id %}<a href="{{ url_for('plongeur', user_id=p.user_id) }}">{{ p.pseudo or 'Anonyme' }}</a>{% else %}{{ p.pseudo or 'Anonyme' }}{% endif %} · {{ p.created_at.strftime('%d/%m/%Y') }}</span>
           {% if user_is_admin %}
           <form method="post" action="{{ url_for('admin_delete_photo', photo_id=p.id) }}"
                 onsubmit="return confirm('Supprimer cette photo ?');" class="admin-inline">
@@ -116,7 +116,7 @@
       {% for c in comments %}
       <div class="spot-comment">
         <div class="spot-comment-head">
-          <span class="spot-comment-author">{{ c.pseudo or 'Anonyme' }}</span>
+          <span class="spot-comment-author">{% if c.user_id %}<a href="{{ url_for('plongeur', user_id=c.user_id) }}">{{ c.pseudo or 'Anonyme' }}</a>{% else %}{{ c.pseudo or 'Anonyme' }}{% endif %}</span>
           <span class="spot-comment-date">{{ c.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
           {% if user_is_admin %}
           <form method="post" action="{{ url_for('admin_delete_spot_comment', cid=c.id) }}"

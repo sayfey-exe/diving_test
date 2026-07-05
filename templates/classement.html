@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-head">
   <h1>🏆 Classement de la communauté</h1>
-  <p>Mesure-toi aux autres élèves ! Classement par note moyenne aux tests.</p>
+  <p>Mesure-toi aux autres plongeurs ! Classement par note moyenne aux tests.</p>
 </div>
 
 <section class="compare-banner">
@@ -31,7 +31,7 @@
         <td class="rank">
           {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
         </td>
-        <td class="pseudo">{{ r.pseudo }}{% if r.user_id == current_uid %} <span class="you-tag">toi</span>{% endif %}</td>
+        <td class="pseudo"><a href="{{ url_for('plongeur', user_id=r.user_id) }}">{{ r.pseudo }}</a>{% if r.user_id == current_uid %} <span class="you-tag">toi</span>{% endif %}</td>
         <td><strong>{{ r.moyenne }}/20</strong></td>
         <td>{{ r.meilleure }}/20</td>
         <td>{{ r.nb_tests }}</td>

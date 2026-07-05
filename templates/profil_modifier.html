@@ -20,6 +20,27 @@
       <input type="email" name="email" value="{{ user.email }}" required>
     </label>
     <p class="edit-hint">Si tu changes d'adresse, un nouvel e-mail de confirmation sera envoyé.</p>
+
+    <div class="edit-grid">
+      <label>Niveau
+        <select name="niveau">
+          <option value="">—</option>
+          {% for n in niveaux %}
+          <option value="{{ n }}" {{ 'selected' if user.niveau == n else '' }}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Ville / région
+        <input type="text" name="ville" value="{{ user.ville or '' }}" maxlength="80" placeholder="Ex : Marseille">
+      </label>
+    </div>
+    <label>Bio
+      <textarea name="bio" maxlength="600" placeholder="Présente-toi en quelques mots (niveau, spots favoris, recherche de binôme…)">{{ user.bio or '' }}</textarea>
+    </label>
+    <label class="edit-check">
+      <input type="checkbox" name="profile_public" {{ 'checked' if user.profile_public else '' }}>
+      Profil public (visible dans l'annuaire des plongeurs et le fil d'actualité)
+    </label>
     <button type="submit" class="btn btn-primary">Enregistrer</button>
   </form>
 </section>

@@ -5,7 +5,8 @@
 <div class="page-head">
   <h1>📖 Mon carnet de plongée</h1>
   <p>Consigne tes plongées : profondeur, durée, binôme, conditions et ressenti.
-     Ton historique et tes statistiques, rien qu'à toi.</p>
+     Chaque plongée peut rester <strong>privée</strong> 🔒 ou être <strong>partagée</strong> 🌐
+     dans le fil de la <a href="{{ url_for('communaute') }}">communauté</a>.</p>
 </div>
 
 <section class="carnet-stats">
@@ -54,6 +55,10 @@
       </label>
     </div>
     <label>Notes<textarea name="notes" maxlength="2000" placeholder="Faune observée, matériel, points à retenir…"></textarea></label>
+    <label class="edit-check">
+      <input type="checkbox" name="is_public" checked>
+      Partager cette plongée dans le fil de la communauté 🌐
+    </label>
     <button type="submit" class="btn btn-primary">Enregistrer la plongée</button>
   </form>
 </details>
@@ -69,6 +74,9 @@
         <span class="dive-date">{{ l.date.strftime('%d/%m/%Y') if l.date else l.created_at.strftime('%d/%m/%Y') }}</span>
       </div>
       {% if l.ressenti %}<span class="dive-stars">{{ '★' * l.ressenti }}</span>{% endif %}
+      <form method="post" action="{{ url_for('carnet_visibilite', log_id=l.id) }}" class="admin-inline">
+        <button class="btn-vis" title="{{ 'Publique — cliquer pour rendre privée' if l.is_public else 'Privée — cliquer pour partager' }}">{{ '🌐' if l.is_public else '🔒' }}</button>
+      </form>
       <form method="post" action="{{ url_for('carnet_supprimer', log_id=l.id) }}"
             onsubmit="return confirm('Supprimer cette plongée ?');" class="admin-inline">
         <button class="btn-del btn-del-sm">🗑️</button>

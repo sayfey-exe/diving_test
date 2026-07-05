@@ -61,6 +61,13 @@ L'onglet **« 🎓 Réviser »** regroupe la théorie et les quiz. Les autres on
   site — relié à la carte des spots —, profondeur, durée, température, binôme,
   lestage, gaz, ressenti, notes) avec **statistiques** (nombre de plongées,
   temps cumulé, profondeur max, sites visités).
+- **👥 Communauté** — un volet social inspiré des plateformes de plongée :
+  **profils publics** (niveau, ville, bio, statistiques), **abonnements**
+  (suivre d'autres plongeurs), **fil d'actualité** (leurs plongées partagées,
+  photos et spots ajoutés) et un annuaire **« Trouver un binôme »** avec
+  recherche par pseudo, ville ou niveau. Chaque plongée du carnet peut rester
+  **privée** 🔒 ou être **partagée** 🌐 dans le fil ; un profil peut être rendu
+  privé. Les pseudos (classement, photos, commentaires) renvoient aux profils.
 - **🏆 Classement** — comparaison à la **moyenne de la communauté** et classement
   des joueurs par note moyenne (esprit de compétition).
 - **🛡️ Mode administrateur** — vue de tous les comptes et de leurs scores, et

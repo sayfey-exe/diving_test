@@ -38,7 +38,7 @@ from data.spots import SPOTS, FISH
 from data.signals import SIGNALS, SIGNAL_BY_KEY
 from models import (
     db, User, TestResult, ChapterStudy, QuestionComment,
-    Spot, SpotComment, SpotPhoto, Species, DiveLog,
+    Spot, SpotComment, SpotPhoto, Species, DiveLog, Follow,
 )
 import recognition
 
@@ -293,9 +293,23 @@ def _migrate_schema():
                      "DEFAULT %s" % bool_default)
     if "oauth_provider" not in cols:
         stmts.append("ALTER TABLE users ADD COLUMN oauth_provider VARCHAR(20)")
+    if "bio" not in cols:
+        stmts.append("ALTER TABLE users ADD COLUMN bio TEXT")
+    if "niveau" not in cols:
+        stmts.append("ALTER TABLE users ADD COLUMN niveau VARCHAR(40)")
+    if "ville" not in cols:
+        stmts.append("ALTER TABLE users ADD COLUMN ville VARCHAR(80)")
+    if "profile_public" not in cols:
+        stmts.append("ALTER TABLE users ADD COLUMN profile_public BOOLEAN NOT NULL "
+                     "DEFAULT %s" % ("TRUE" if dialect == "postgresql" else "1"))
     # Les comptes OAuth n'ont pas de mot de passe : la colonne doit être nullable.
     if dialect == "postgresql":
         stmts.append("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
+    if "dive_logs" in insp.get_table_names():
+        dcols = {c["name"] for c in insp.get_columns("dive_logs")}
+        if "is_public" not in dcols:
+            stmts.append("ALTER TABLE dive_logs ADD COLUMN is_public BOOLEAN NOT NULL "
+                         "DEFAULT %s" % ("TRUE" if dialect == "postgresql" else "1"))
     for s in stmts:
         try:
             db.session.execute(text(s))
@@ -1069,6 +1083,11 @@ def profil_modifier():
                 return redirect(url_for("profil_modifier"))
 
             user.pseudo = pseudo
+            user.bio = (request.form.get("bio") or "").strip()[:600] or None
+            niveau = (request.form.get("niveau") or "").strip()
+            user.niveau = niveau if niveau in NIVEAUX else None
+            user.ville = (request.form.get("ville") or "").strip()[:80] or None
+            user.profile_public = request.form.get("profile_public") == "on"
             if email != user.email:
                 user.email = email
                 user.email_verified = False
@@ -1105,7 +1124,7 @@ def profil_modifier():
                 flash("Mot de passe mis à jour.", "success")
             return redirect(url_for("profil_modifier"))
 
-    return render_template("profil_modifier.html", user=user)
+    return render_template("profil_modifier.html", user=user, niveaux=NIVEAUX)
 
 
 def _num(val, cast):
@@ -1174,10 +1193,21 @@ def carnet_ajouter():
         gaz=(request.form.get("gaz") or "").strip()[:40] or None,
         ressenti=ressenti,
         notes=(request.form.get("notes") or "").strip()[:2000] or None,
+        is_public=(request.form.get("is_public") == "on"),
     )
     db.session.add(log)
     db.session.commit()
     flash("Plongée ajoutée à ton carnet. 🤿", "success")
+    return redirect(url_for("carnet"))
+
+
+@app.route("/carnet/<int:log_id>/visibilite", methods=["POST"])
+@login_required
+def carnet_visibilite(log_id):
+    log = db.session.get(DiveLog, log_id)
+    if log and log.user_id == current_user.id:
+        log.is_public = not log.is_public
+        db.session.commit()
     return redirect(url_for("carnet"))
 
 
@@ -1211,6 +1241,180 @@ def classement():
         mon_rang=mon_rang,
         current_uid=current_user.id if current_user.is_authenticated else None,
     )
+
+
+# ---------------------------------------------------------------------------
+# Communauté (profils publics, abonnements, fil d'actualité, binômes)
+# ---------------------------------------------------------------------------
+
+NIVEAUX = ["N1", "N2", "N3", "N4", "Guide de palanquée", "Moniteur",
+           "PADI OWD", "PADI AOWD", "Divemaster", "Débutant", "Autre"]
+
+
+def _following_ids(user):
+    if not getattr(user, "is_authenticated", False):
+        return set()
+    return {r.followed_id for r in Follow.query.filter_by(follower_id=user.id).all()}
+
+
+def _is_following(follower, followed_id):
+    if not getattr(follower, "is_authenticated", False):
+        return False
+    return (Follow.query.filter_by(follower_id=follower.id, followed_id=followed_id)
+            .first() is not None)
+
+
+def _follow_counts(user_id):
+    followers = Follow.query.filter_by(followed_id=user_id).count()
+    following = Follow.query.filter_by(follower_id=user_id).count()
+    return followers, following
+
+
+def _user_social_stats(user):
+    followers, following = _follow_counts(user.id)
+    return {
+        "dives": DiveLog.query.filter_by(user_id=user.id, is_public=True).count(),
+        "photos": SpotPhoto.query.filter_by(user_id=user.id).count(),
+        "spots": Spot.query.filter_by(created_by=user.id).count(),
+        "followers": followers,
+        "following": following,
+    }
+
+
+def _build_activity(user_ids, limit=40):
+    """Fil d'activité (plongées publiques, photos, spots) pour des utilisateurs."""
+    user_ids = list(user_ids)
+    if not user_ids:
+        return []
+    items = []
+    for d in (DiveLog.query
+              .filter(DiveLog.user_id.in_(user_ids), DiveLog.is_public.is_(True))
+              .order_by(DiveLog.created_at.desc()).limit(limit).all()):
+        items.append({"type": "dive", "user_id": d.user_id, "when": d.created_at, "obj": d})
+    for p in (SpotPhoto.query.filter(SpotPhoto.user_id.in_(user_ids))
+              .order_by(SpotPhoto.created_at.desc()).limit(limit).all()):
+        items.append({"type": "photo", "user_id": p.user_id, "when": p.created_at, "obj": p})
+    for s in (Spot.query.filter(Spot.created_by.in_(user_ids))
+              .order_by(Spot.created_at.desc()).limit(limit).all()):
+        items.append({"type": "spot", "user_id": s.created_by, "when": s.created_at, "obj": s})
+    users = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()}
+    for it in items:
+        it["user"] = users.get(it["user_id"])
+    items = [it for it in items if it["when"] is not None and it["user"] is not None]
+    items.sort(key=lambda it: it["when"], reverse=True)
+    return items[:limit]
+
+
+def _suggested_divers(user, following, limit=6):
+    exclude = set(following)
+    if getattr(user, "is_authenticated", False):
+        exclude.add(user.id)
+    cand = (User.query.filter_by(profile_public=True)
+            .order_by(User.created_at.desc()).limit(60).all())
+    return [u for u in cand if u.id not in exclude][:limit]
+
+
+@app.route("/communaute")
+def communaute():
+    following = _following_ids(current_user)
+    if following:
+        feed, scope = _build_activity(following), "abonnements"
+    else:
+        feed = _build_activity([u.id for u in User.query.all()])
+        scope = "global"
+    suggestions = _suggested_divers(current_user, following)
+    counts = {u.id: _follow_counts(u.id) for u in suggestions}
+    return render_template("communaute.html", feed=feed, scope=scope,
+                           suggestions=suggestions, counts=counts)
+
+
+@app.route("/plongeurs")
+def plongeurs():
+    q = (request.args.get("q") or "").strip()
+    niveau = (request.args.get("niveau") or "").strip()
+    query = User.query.filter_by(profile_public=True)
+    if q:
+        like = "%" + q + "%"
+        query = query.filter(db.or_(User.pseudo.ilike(like), User.ville.ilike(like)))
+    if niveau:
+        query = query.filter(User.niveau == niveau)
+    divers = query.order_by(User.created_at.desc()).limit(120).all()
+    counts = {u.id: _follow_counts(u.id) for u in divers}
+    return render_template("plongeurs.html", divers=divers, q=q, niveau=niveau,
+                           niveaux=NIVEAUX, following=_following_ids(current_user),
+                           counts=counts)
+
+
+@app.route("/plongeur/<int:user_id>")
+def plongeur(user_id):
+    u = db.session.get(User, user_id)
+    if not u:
+        abort(404)
+    est_moi = current_user.is_authenticated and current_user.id == u.id
+    if not u.profile_public and not est_moi and not is_admin():
+        return render_template("plongeur.html", u=u, prive=True, est_moi=False,
+                               following_me=False, stats=_user_social_stats(u),
+                               dives=[], photos=[], spots_added=[])
+    dq = DiveLog.query.filter_by(user_id=u.id)
+    if not est_moi:
+        dq = dq.filter_by(is_public=True)
+    dives = dq.order_by(DiveLog.date.desc(), DiveLog.id.desc()).limit(10).all()
+    photos = (SpotPhoto.query.filter_by(user_id=u.id)
+              .order_by(SpotPhoto.created_at.desc()).limit(12).all())
+    spots_added = (Spot.query.filter_by(created_by=u.id)
+                   .order_by(Spot.created_at.desc()).all())
+    return render_template(
+        "plongeur.html", u=u, prive=False, est_moi=est_moi,
+        following_me=_is_following(current_user, u.id),
+        stats=_user_social_stats(u), dives=dives, photos=photos,
+        spots_added=spots_added,
+    )
+
+
+@app.route("/plongeur/<int:user_id>/suivre", methods=["POST"])
+@login_required
+def suivre(user_id):
+    cible = db.session.get(User, user_id)
+    if cible and user_id != current_user.id and not _is_following(current_user, user_id):
+        db.session.add(Follow(follower_id=current_user.id, followed_id=user_id))
+        db.session.commit()
+        flash("Tu suis maintenant %s." % cible.pseudo, "success")
+    return redirect(request.referrer or url_for("plongeur", user_id=user_id))
+
+
+@app.route("/plongeur/<int:user_id>/ne-plus-suivre", methods=["POST"])
+@login_required
+def ne_plus_suivre(user_id):
+    f = Follow.query.filter_by(follower_id=current_user.id, followed_id=user_id).first()
+    if f:
+        db.session.delete(f)
+        db.session.commit()
+        flash("Tu ne suis plus ce plongeur.", "success")
+    return redirect(request.referrer or url_for("plongeur", user_id=user_id))
+
+
+@app.route("/plongeur/<int:user_id>/abonnes")
+def abonnes(user_id):
+    u = db.session.get(User, user_id)
+    if not u:
+        abort(404)
+    ids = [f.follower_id for f in Follow.query.filter_by(followed_id=user_id).all()]
+    users = User.query.filter(User.id.in_(ids)).all() if ids else []
+    return render_template("abonnements.html", u=u, titre="Abonnés",
+                           users=users, following=_following_ids(current_user),
+                           counts={x.id: _follow_counts(x.id) for x in users})
+
+
+@app.route("/plongeur/<int:user_id>/abonnements")
+def abonnements(user_id):
+    u = db.session.get(User, user_id)
+    if not u:
+        abort(404)
+    ids = [f.followed_id for f in Follow.query.filter_by(follower_id=user_id).all()]
+    users = User.query.filter(User.id.in_(ids)).all() if ids else []
+    return render_template("abonnements.html", u=u, titre="Abonnements",
+                           users=users, following=_following_ids(current_user),
+                           counts={x.id: _follow_counts(x.id) for x in users})
 
 
 @app.route("/admin")

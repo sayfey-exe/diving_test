@@ -22,6 +22,12 @@ class User(UserMixin, db.Model):
     oauth_provider = db.Column(db.String(20))   # "google" | "facebook" | None
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Profil public / social
+    bio = db.Column(db.Text)
+    niveau = db.Column(db.String(40))           # ex. N1, N2, N3, Guide de palanquée…
+    ville = db.Column(db.String(80))            # ville / région du plongeur
+    profile_public = db.Column(db.Boolean, default=True, nullable=False)
+
     results = db.relationship(
         "TestResult", backref="user", lazy=True, cascade="all, delete-orphan"
     )
@@ -170,7 +176,22 @@ class DiveLog(db.Model):
     gaz = db.Column(db.String(40))            # air, nitrox 32…
     ressenti = db.Column(db.Integer)          # 1 à 5
     notes = db.Column(db.Text)
+    is_public = db.Column(db.Boolean, default=True, nullable=False)  # visible dans le fil
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Follow(db.Model):
+    """Relation d'abonnement : follower_id suit followed_id."""
+    __tablename__ = "follows"
+
+    id = db.Column(db.Integer, primary_key=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("follower_id", "followed_id", name="uq_follow"),
+    )
 
 
 class ChapterStudy(db.Model):

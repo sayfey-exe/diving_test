@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ titre }} de {{ u.pseudo }} — Palanquée{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('communaute') }}">Communauté</a> <span>/</span>
+  <a href="{{ url_for('plongeur', user_id=u.id) }}">{{ u.pseudo }}</a> <span>/</span> {{ titre }}
+</nav>
+
+<div class="page-head"><h1>{{ titre }} de {{ u.pseudo }}</h1></div>
+
+{% if users %}
+<div class="diver-grid">
+  {% for d in users %}
+  <div class="diver-card">
+    <a href="{{ url_for('plongeur', user_id=d.id) }}" class="diver-card-head">
+      <span class="diver-avatar">🤿</span>
+      <span>
+        <strong>{{ d.pseudo }}</strong>
+        <span class="diver-sub">{% if d.niveau %}{{ d.niveau }}{% endif %}{% if d.ville %} · 📍 {{ d.ville }}{% endif %}</span>
+      </span>
+    </a>
+    <div class="diver-card-foot">
+      <span class="diver-count">{{ counts[d.id][0] }} abonné{{ 's' if counts[d.id][0] != 1 else '' }}</span>
+      {% if current_user.is_authenticated and d.id != current_user.id %}
+        {% if d.id in following %}
+        <form method="post" action="{{ url_for('ne_plus_suivre', user_id=d.id) }}" class="admin-inline">
+          <button class="btn btn-ghost btn-sm">✓ Abonné</button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ url_for('suivre', user_id=d.id) }}" class="admin-inline">
+          <button class="btn btn-primary btn-sm">Suivre</button>
+        </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">Personne pour l'instant.</p>
+{% endif %}
+{% endblock %}
