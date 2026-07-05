@@ -47,6 +47,19 @@
   </form>
 </section>
 
+<section class="mail-status">
+  <h2 class="section-title">🤖 Reconnaissance automatique des espèces</h2>
+  {% if reco_status.enabled %}
+  <p>✅ Activée (modèle <code>{{ reco_status.model }}</code>, seuil de confiance
+     {{ (reco_status.min_confidence * 100)|round|int }} %). Le bouton
+     « Identifier l'espèce automatiquement » apparaît lors de l'ajout d'une photo.</p>
+  {% else %}
+  <p class="admin-note">⚠️ Désactivée. {{ reco_status.reason }} Définis la variable
+     d'environnement <code>ANTHROPIC_API_KEY</code> (et éventuellement
+     <code>VISION_MODEL</code>) pour l'activer — voir README.</p>
+  {% endif %}
+</section>
+
 <div class="table-wrap">
   <table class="data-table admin-table">
     <thead>

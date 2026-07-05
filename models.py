@@ -5,6 +5,7 @@ from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from sqlalchemy.orm import deferred
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
@@ -145,6 +146,10 @@ class Species(db.Model):
     taille = db.Column(db.String(80))
     image = db.Column(db.String(120))                  # fichier static/img (référence)
     photo_id = db.Column(db.Integer)                   # à défaut, photo communautaire illustrante
+    # Photo de référence téléversée par un admin (prioritaire). Différée pour ne
+    # pas charger le blob à chaque listing du catalogue.
+    image_mimetype = db.Column(db.String(40))
+    image_data = deferred(db.Column(db.LargeBinary))
     signal_key = db.Column(db.String(60))              # signe de plongée associé (data/signals)
     validated = db.Column(db.Boolean, default=True, index=True)
     source = db.Column(db.String(40), default="seed")  # seed | communauté | reconnaissance

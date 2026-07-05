@@ -47,6 +47,26 @@ def min_confidence():
         return 0.55
 
 
+def status():
+    """État de la reconnaissance, pour l'affichage (admin & UI)."""
+    has_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    disabled_flag = os.environ.get("VISION_ENABLED", "1").lower() in ("0", "false", "no")
+    if not has_key:
+        raison = ("Aucune clé ANTHROPIC_API_KEY définie : la reconnaissance "
+                  "automatique est désactivée.")
+    elif disabled_flag:
+        raison = "Désactivée via VISION_ENABLED=0."
+    else:
+        raison = "Activée."
+    return {
+        "enabled": enabled(),
+        "has_key": has_key,
+        "model": os.environ.get("VISION_MODEL", "claude-3-5-sonnet-latest"),
+        "min_confidence": min_confidence(),
+        "reason": raison,
+    }
+
+
 def identify(image_bytes, mimetype="image/jpeg", known=None):
     """Propose une espèce pour une image.
 

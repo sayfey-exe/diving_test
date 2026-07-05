@@ -29,6 +29,26 @@
     </div>
   </header>
 
+  {% if user_is_admin %}
+  <section class="admin-photo-panel">
+    <h2>🛠️ Photo du catalogue (admin)</h2>
+    <p class="section-sub">Téléverse la photo de référence de cette espèce, ou retire-la.</p>
+    <div class="admin-photo-actions">
+      <form method="post" action="{{ url_for('admin_espece_photo', key=sp.key) }}"
+            enctype="multipart/form-data" class="admin-inline admin-photo-form">
+        <input type="file" name="photo" accept="image/*" required>
+        <button class="btn btn-primary btn-sm">{{ 'Remplacer la photo' if url else 'Ajouter une photo' }}</button>
+      </form>
+      {% if url %}
+      <form method="post" action="{{ url_for('admin_espece_photo_supprimer', key=sp.key) }}"
+            onsubmit="return confirm('Retirer la photo de cette espèce ?');" class="admin-inline">
+        <button class="btn-del btn-del-sm">🗑️ Retirer la photo</button>
+      </form>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
   {% if signal %}
   <section class="species-section species-signal">
     <h2>🤿 Signe de plongée</h2>
@@ -65,7 +85,18 @@
         </a>
         <figcaption>
           {% if p.caption %}<span class="photo-cap">{{ p.caption }}</span>{% endif %}
-          <span class="photo-author">📷 {{ p.pseudo or 'Anonyme' }}</span>
+          <span class="photo-author">📷 {% if p.user_id %}<a href="{{ url_for('plongeur', user_id=p.user_id) }}">{{ p.pseudo or 'Anonyme' }}</a>{% else %}{{ p.pseudo or 'Anonyme' }}{% endif %}</span>
+          {% if user_is_admin %}
+          <span class="photo-admin-actions">
+            <form method="post" action="{{ url_for('admin_espece_photo_principale', key=sp.key, photo_id=p.id) }}" class="admin-inline">
+              <button class="btn-mini" title="Définir comme photo principale">🌟</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_delete_photo', photo_id=p.id) }}"
+                  onsubmit="return confirm('Supprimer cette photo ?');" class="admin-inline">
+              <button class="btn-del btn-del-sm">🗑️</button>
+            </form>
+          </span>
+          {% endif %}
         </figcaption>
       </figure>
       {% endfor %}

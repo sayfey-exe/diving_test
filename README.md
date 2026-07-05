@@ -162,10 +162,23 @@ Pour l'activer, on branche l'API vision de Claude via ces variables :
 | `VISION_MODEL`          | Modèle vision utilisé                             | `claude-3-5-sonnet-latest` |
 | `VISION_MIN_CONFIDENCE` | Seuil de confiance (0–1) pour accepter une propal | `0.55` |
 
+Une fois activée, un bouton **« 🤖 Identifier l'espèce automatiquement »** apparaît
+dans le formulaire d'ajout de photo (page d'un spot) : il analyse la photo choisie
+et présélectionne l'espèce (ou préremplit une nouvelle proposition). Si la
+reconnaissance n'est **pas** configurée, un message explicatif s'affiche à la
+place, et l'état (activée/désactivée, modèle) est visible dans **🛡️ Admin**.
+
 Le résultat n'est **jamais** publié sans contrôle : une espèce reconnue mais
 absente du catalogue est créée *en attente de validation* (l'admin la valide
 depuis **🛡️ Admin → Espèces**), et l'utilisateur peut toujours corriger. Sans
 clé, `recognition.identify()` renvoie simplement `None`.
+
+**Gestion des photos du catalogue (admin)** — depuis la fiche d'une espèce
+(`/espece/<clé>`), un administrateur peut **téléverser / remplacer** la photo de
+référence, la **retirer** (une émoji de secours s'affiche alors), **promouvoir**
+une photo de la communauté en photo principale, ou **supprimer** des photos de la
+galerie. La photo téléversée est stockée en base et prioritaire sur l'image
+statique.
 
 ```bash
 # Linux / macOS

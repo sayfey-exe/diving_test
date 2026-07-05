@@ -77,12 +77,24 @@
     <h2>➕ Ajouter ta photo à ce spot</h2>
     {% if current_user.is_authenticated %}
     <form method="post" action="{{ url_for('spot_photo_upload', key=spot.key) }}"
-          enctype="multipart/form-data" class="upload-form">
+          enctype="multipart/form-data" class="upload-form"
+          id="photo-form" data-reco-url="{{ url_for('reconnaissance') }}"
+          data-reco-available="{{ 'yes' if reco_status.enabled else 'no' }}">
       <label>Ta photo (JPEG, PNG…)
-        <input type="file" name="photo" accept="image/*" required>
+        <input type="file" name="photo" id="photo-input" accept="image/*" required>
       </label>
+
+      {% if reco_status.enabled %}
+      <div class="reco-box">
+        <button type="button" class="btn btn-ghost btn-sm" id="reco-btn">🤖 Identifier l'espèce automatiquement</button>
+        <p class="reco-result" id="reco-result" hidden></p>
+      </div>
+      {% else %}
+      <p class="upload-note">🤖 Reconnaissance automatique indisponible : {{ reco_status.reason }}</p>
+      {% endif %}
+
       <label>Espèce (pour enrichir le guide)
-        <select name="fish_key">
+        <select name="fish_key" id="fish-select">
           <option value="">— Choisir une espèce —</option>
           {% for k, f in fish.items() %}
           <option value="{{ k }}">{{ f.nom }}</option>
@@ -90,15 +102,14 @@
         </select>
       </label>
       <label>…ou propose une nouvelle espèce
-        <input type="text" name="nouvelle_espece" maxlength="120"
+        <input type="text" name="nouvelle_espece" id="new-species" maxlength="120"
                placeholder="Ex : Rascasse rouge (sera validée par un admin)">
       </label>
       <label>Légende (optionnel)
         <input type="text" name="caption" maxlength="300" placeholder="Ex : croisé à 18 m près du tombant">
       </label>
-      <p class="upload-note">🤖 Si tu ne renseignes rien, une reconnaissance automatique
-        peut proposer l'espèce (quand elle est activée). Une nouvelle espèce reste
-        en attente de validation avant d'apparaître dans le guide.</p>
+      <p class="upload-note">Une nouvelle espèce reste en attente de validation
+        avant d'apparaître dans le guide.</p>
       <button type="submit" class="btn btn-primary">Envoyer ma photo</button>
     </form>
     {% else %}
@@ -143,4 +154,8 @@
     {% endif %}
   </section>
 </article>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='reco.js') }}"></script>
 {% endblock %}

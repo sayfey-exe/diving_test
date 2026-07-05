@@ -269,7 +269,11 @@ def species_map(validated_only=True):
 
 
 def species_photo_url(sp):
-    """URL d'illustration d'une espèce : image de référence, sinon photo taguée."""
+    """URL d'illustration d'une espèce : photo admin téléversée, sinon image de
+    référence (fichier statique), sinon photo communautaire taguée."""
+    # On teste image_mimetype (colonne légère) pour éviter de charger le blob.
+    if getattr(sp, "image_mimetype", None):
+        return url_for("espece_photo", key=sp.key)
     img = getattr(sp, "image", None)
     if img:
         return url_for("static", filename="img/" + img)
@@ -310,6 +314,13 @@ def _migrate_schema():
         if "is_public" not in dcols:
             stmts.append("ALTER TABLE dive_logs ADD COLUMN is_public BOOLEAN NOT NULL "
                          "DEFAULT %s" % ("TRUE" if dialect == "postgresql" else "1"))
+    if "species" in insp.get_table_names():
+        scols = {c["name"] for c in insp.get_columns("species")}
+        if "image_mimetype" not in scols:
+            stmts.append("ALTER TABLE species ADD COLUMN image_mimetype VARCHAR(40)")
+        if "image_data" not in scols:
+            blob = "BYTEA" if dialect == "postgresql" else "BLOB"
+            stmts.append("ALTER TABLE species ADD COLUMN image_data %s" % blob)
     for s in stmts:
         try:
             db.session.execute(text(s))
@@ -429,7 +440,8 @@ def spot(key):
     comments = (SpotComment.query.filter_by(spot_key=key)
                 .order_by(SpotComment.created_at.asc()).all())
     return render_template("spot.html", spot=s, poissons=poissons, photos=photos,
-                           comments=comments, fish=smap)
+                           comments=comments, fish=smap,
+                           reco_status=recognition.status())
 
 
 @app.route("/spots/add", methods=["POST"])
@@ -652,7 +664,57 @@ def espece(key):
     # Spots où l'espèce est renseignée.
     spots_ici = [s for s in Spot.query.all() if key in s.fish_keys]
     return render_template("espece.html", sp=sp, photos=photos, signal=signal,
-                           spots_ici=spots_ici)
+                           spots_ici=spots_ici, reco_status=recognition.status())
+
+
+@app.route("/espece-photo/<key>")
+def espece_photo(key):
+    sp = Species.query.filter_by(key=key).first()
+    if not sp or not sp.image_data:
+        abort(404)
+    return Response(sp.image_data, mimetype=sp.image_mimetype or "image/jpeg",
+                    headers={"Cache-Control": "public, max-age=86400"})
+
+
+def _process_image(file, max_size=1280):
+    """Redimensionne une image téléversée et renvoie ses octets JPEG, ou None."""
+    try:
+        from PIL import Image
+        img = Image.open(file.stream).convert("RGB")
+        img.thumbnail((max_size, max_size))
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=82, optimize=True)
+        return buf.getvalue()
+    except Exception:  # noqa: BLE001
+        return None
+
+
+@app.route("/reconnaissance", methods=["POST"])
+@login_required
+def reconnaissance():
+    """Reconnaissance d'espèce à la demande (bouton dans le formulaire d'upload)."""
+    st = recognition.status()
+    if not st["enabled"]:
+        return jsonify({"available": False, "message": st["reason"]})
+    file = request.files.get("photo")
+    if not file or not file.filename:
+        return jsonify({"available": True, "error": "Choisis d'abord une photo."}), 400
+    data = _process_image(file)
+    if data is None:
+        return jsonify({"available": True, "error": "Fichier image invalide."}), 400
+    smap = species_map()
+    sugg = recognition.identify(data, "image/jpeg",
+                                known=[s.nom for s in smap.values()])
+    if not sugg:
+        return jsonify({"available": True, "suggestion": None,
+                        "message": "Aucune espèce reconnue avec certitude sur cette photo."})
+    match = _match_species(sugg["nom"], smap)
+    return jsonify({"available": True, "suggestion": {
+        "nom": sugg["nom"],
+        "confiance": round(sugg["confiance"], 2),
+        "categorie": sugg.get("categorie"),
+        "match_key": match.key if match else None,
+    }})
 
 
 # --- Modération (admins uniquement) ---
@@ -661,9 +723,12 @@ def espece(key):
 @admin_required
 def admin_delete_photo(photo_id):
     p = db.session.get(SpotPhoto, photo_id)
-    dest = url_for("spots")
+    dest = request.referrer or url_for("spots")
     if p:
-        dest = url_for("spot", key=p.spot_id)
+        # Si l'espèce utilisait cette photo comme illustration, on la détache.
+        Species.query.filter_by(photo_id=photo_id).update({"photo_id": None})
+        if not request.referrer:
+            dest = url_for("spot", key=p.spot_id)
         db.session.delete(p)
         db.session.commit()
         flash("Photo supprimée.", "success")
@@ -736,6 +801,57 @@ def admin_espece_signal(key):
         db.session.commit()
         flash("Signe de plongée mis à jour pour « %s ». " % sp.nom, "success")
     return redirect(url_for("admin_especes"))
+
+
+@app.route("/admin/espece/<key>/photo", methods=["POST"])
+@admin_required
+def admin_espece_photo(key):
+    sp = Species.query.filter_by(key=key).first()
+    if not sp:
+        abort(404)
+    file = request.files.get("photo")
+    if not file or not file.filename:
+        flash("Choisis une image à téléverser.", "error")
+        return redirect(url_for("espece", key=key))
+    data = _process_image(file)
+    if data is None:
+        flash("Fichier image invalide (JPEG, PNG…).", "error")
+        return redirect(url_for("espece", key=key))
+    sp.image_data = data
+    sp.image_mimetype = "image/jpeg"
+    db.session.commit()
+    flash("Photo du catalogue mise à jour pour « %s ». 🖼️" % sp.nom, "success")
+    return redirect(url_for("espece", key=key))
+
+
+@app.route("/admin/espece/<key>/photo/supprimer", methods=["POST"])
+@admin_required
+def admin_espece_photo_supprimer(key):
+    sp = Species.query.filter_by(key=key).first()
+    if sp:
+        sp.image_data = None
+        sp.image_mimetype = None
+        sp.image = None        # on retire aussi l'éventuelle image statique
+        sp.photo_id = None     # et l'illustration communautaire
+        db.session.commit()
+        flash("Photo du catalogue retirée pour « %s ». Une émoji de secours "
+              "s'affiche à la place." % sp.nom, "success")
+    return redirect(url_for("espece", key=key))
+
+
+@app.route("/admin/espece/<key>/photo-principale/<int:photo_id>", methods=["POST"])
+@admin_required
+def admin_espece_photo_principale(key, photo_id):
+    sp = Species.query.filter_by(key=key).first()
+    p = db.session.get(SpotPhoto, photo_id)
+    if sp and p:
+        sp.photo_id = photo_id
+        sp.image_data = None       # la photo communautaire devient l'illustration
+        sp.image_mimetype = None
+        sp.image = None
+        db.session.commit()
+        flash("Cette photo est désormais la photo principale de « %s ». 🌟" % sp.nom, "success")
+    return redirect(url_for("espece", key=key))
 
 
 @app.route("/admin/espece/<key>/supprimer", methods=["POST"])
@@ -1432,7 +1548,8 @@ def admin():
     nb_especes_attente = Species.query.filter_by(validated=False).count()
     return render_template("admin.html", rows=rows, totaux=totaux,
                            nb_comment=nb_comment, nb_especes_attente=nb_especes_attente,
-                           mail_ok=mail_configured(), mail_server=MAIL_SERVER)
+                           mail_ok=mail_configured(), mail_server=MAIL_SERVER,
+                           reco_status=recognition.status())
 
 
 @app.route("/admin/test-email", methods=["POST"])

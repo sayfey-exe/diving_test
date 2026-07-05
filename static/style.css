@@ -730,3 +730,18 @@ a.pstat:hover { border-color: var(--primary); }
   .community-aside { position: static; }
   .edit-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- Reconnaissance automatique (upload) ---------- */
+.reco-box { background: var(--surface-soft); border: 1px dashed var(--border); border-radius: 12px; padding: 0.7rem 0.9rem; display: grid; gap: 0.5rem; }
+.reco-result { margin: 0; font-size: 0.9rem; }
+.reco-result.reco-ok { color: var(--primary-dark); }
+.reco-result.reco-warn { color: #8a6400; }
+
+/* ---------- Admin : gestion des photos du catalogue ---------- */
+.admin-photo-panel { background: #fff7e6; border: 1px solid #f6dfa8; border-radius: 14px; padding: 1rem 1.2rem; margin-top: 1rem; }
+.admin-photo-panel h2 { margin: 0 0 0.3rem; font-size: 1.05rem; }
+.admin-photo-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-top: 0.6rem; }
+.admin-photo-form { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.photo-admin-actions { display: flex; gap: 0.4rem; margin-top: 0.3rem; }
+.btn-mini { background: var(--surface-soft); border: 1px solid var(--border); border-radius: 8px; padding: 0.2rem 0.5rem; font: inherit; font-size: 0.85rem; cursor: pointer; }
+.btn-mini:hover { background: var(--warn); border-color: var(--warn); }
