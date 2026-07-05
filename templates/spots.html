@@ -63,8 +63,9 @@
     <h3>{{ s.nom }}</h3>
     <p class="spot-place">{{ s.lieu }}{% if s.profondeur %} · {{ s.profondeur }}{% endif %}</p>
     <div class="spot-fish-mini">
-      {% for k in s.fish_keys %}{% if k in fish %}
-      <img src="{{ url_for('static', filename='img/' ~ fish[k].image) }}" alt="{{ fish[k].nom }}" title="{{ fish[k].nom }}">
+      {% for k in s.fish_keys %}{% if k in fish %}{% set u = species_photo_url(fish[k]) %}
+      {% if u %}<img src="{{ u }}" alt="{{ fish[k].nom }}" title="{{ fish[k].nom }}">
+      {% else %}<span class="fish-mini-emoji" title="{{ fish[k].nom }}">{{ species_emoji(fish[k].categorie) }}</span>{% endif %}
       {% endif %}{% endfor %}
     </div>
     <span class="feature-link">Voir le spot →</span>

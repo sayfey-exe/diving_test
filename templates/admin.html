@@ -24,6 +24,10 @@
     <span class="stat-num">💬 {{ nb_comment }}</span>
     <span class="stat-label">Remarques sur les questions</span>
   </a>
+  <a class="stat-box stat-box-link" href="{{ url_for('admin_especes') }}">
+    <span class="stat-num">🐟 {{ nb_especes_attente }}</span>
+    <span class="stat-label">Espèces à valider</span>
+  </a>
 </section>
 
 <div class="table-wrap">

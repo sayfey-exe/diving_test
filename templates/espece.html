@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ sp.nom }} — Vie sous-marine — Palanquée{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ url_for('poissons') }}">Vie sous-marine</a> <span>/</span> {{ sp.nom }}
+</nav>
+
+{% if not sp.validated %}
+<p class="admin-note">⏳ Espèce proposée{% if sp.source == 'reconnaissance' %} par reconnaissance automatique{% endif %}{% if sp.confidence %} (confiance {{ (sp.confidence * 100)|round|int }} %){% endif %} — en attente de validation.</p>
+{% endif %}
+
+<article class="species-detail">
+  <header class="species-hero">
+    {% set url = species_photo_url(sp) %}
+    <div class="species-hero-img">
+      {% if url %}<img src="{{ url }}" alt="{{ sp.nom }}">
+      {% else %}<span class="species-noimg species-noimg-lg">{{ species_emoji(sp.categorie) }}</span>{% endif %}
+    </div>
+    <div class="species-hero-body">
+      <span class="species-cat-badge">{{ species_emoji(sp.categorie) }} {{ sp.categorie|capitalize }}</span>
+      <h1>{{ sp.nom }}</h1>
+      {% if sp.nom_scientifique %}<p class="species-sci-big"><em>{{ sp.nom_scientifique }}</em></p>{% endif %}
+      {% if sp.description %}<p>{{ sp.description }}</p>{% endif %}
+      <dl class="species-facts">
+        {% if sp.habitat %}<div><dt>Habitat</dt><dd>{{ sp.habitat }}</dd></div>{% endif %}
+        {% if sp.taille %}<div><dt>Taille</dt><dd>{{ sp.taille }}</dd></div>{% endif %}
+      </dl>
+    </div>
+  </header>
+
+  {% if signal %}
+  <section class="species-section species-signal">
+    <h2>🤿 Signe de plongée</h2>
+    <div class="signal-card signal-card-lg">
+      <span class="signal-emoji">{{ signal.emoji }}</span>
+      <div>
+        <strong>{{ signal.nom }}</strong>
+        <p>{{ signal.description }}</p>
+      </div>
+    </div>
+    <p class="section-sub"><a href="{{ url_for('signes') }}">Voir tous les signes de plongée →</a></p>
+  </section>
+  {% endif %}
+
+  {% if spots_ici %}
+  <section class="species-section">
+    <h2>📍 Où l'observer</h2>
+    <div class="chip-grid">
+      {% for s in spots_ici %}
+      <a class="chip" href="{{ url_for('spot', key=s.key) }}"><span class="chip-icon">📍</span> {{ s.nom }}</a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="species-section">
+    <h2>📸 Photos de la communauté ({{ photos|length }})</h2>
+    {% if photos %}
+    <div class="photo-gallery">
+      {% for p in photos %}
+      <figure class="photo-item">
+        <a href="{{ url_for('spot', key=p.spot_id) }}">
+          <img src="{{ url_for('spot_photo', photo_id=p.id) }}" alt="{{ sp.nom }} par {{ p.pseudo }}" loading="lazy">
+        </a>
+        <figcaption>
+          {% if p.caption %}<span class="photo-cap">{{ p.caption }}</span>{% endif %}
+          <span class="photo-author">📷 {{ p.pseudo or 'Anonyme' }}</span>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">Aucune photo pour l'instant. Ajoute la tienne depuis un spot !</p>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

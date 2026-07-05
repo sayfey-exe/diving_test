@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Espèces — Admin — Palanquée{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb"><a href="{{ url_for('admin') }}">Admin</a> <span>/</span> Espèces</nav>
+
+<div class="page-head">
+  <h1>🐟 Modération des espèces</h1>
+  <p>Valide les espèces proposées par la communauté ou la reconnaissance automatique,
+     et associe à chacune son signe de plongée.</p>
+</div>
+
+<section class="admin-block">
+  <h2 class="section-title">⏳ En attente de validation ({{ en_attente|length }})</h2>
+  {% if en_attente %}
+  <div class="admin-species-list">
+    {% for sp in en_attente %}
+    <article class="admin-species-card">
+      <div class="admin-species-thumb">
+        {% set url = species_photo_url(sp) %}
+        {% if url %}<img src="{{ url }}" alt="{{ sp.nom }}">
+        {% else %}<span class="species-noimg">{{ species_emoji(sp.categorie) }}</span>{% endif %}
+      </div>
+      <form method="post" action="{{ url_for('admin_valider_espece', key=sp.key) }}" class="admin-species-form">
+        <h3>{{ sp.nom }}</h3>
+        <p class="admin-species-meta">
+          Proposée par {{ sp.pseudo or 'inconnu' }} · source {{ sp.source }}
+          {% if sp.confidence %}· confiance {{ (sp.confidence * 100)|round|int }} %{% endif %}
+        </p>
+        <div class="admin-species-fields">
+          <label>Catégorie
+            <select name="categorie">
+              {% for c in ['poisson','invertébré','mollusque','crustacé','végétal','reptile','mammifère','autre'] %}
+              <option value="{{ c }}" {{ 'selected' if sp.categorie == c else '' }}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Nom scientifique
+            <input type="text" name="nom_scientifique" value="{{ sp.nom_scientifique or '' }}">
+          </label>
+          <label>Habitat
+            <input type="text" name="habitat" value="{{ sp.habitat or '' }}">
+          </label>
+          <label>Taille
+            <input type="text" name="taille" value="{{ sp.taille or '' }}">
+          </label>
+          <label>Signe de plongée
+            <select name="signal_key">
+              <option value="">— aucun —</option>
+              {% for s in signals %}{% if s.categorie == 'faune' %}
+              <option value="{{ s.key }}" {{ 'selected' if sp.signal_key == s.key else '' }}>{{ s.emoji }} {{ s.nom }}</option>
+              {% endif %}{% endfor %}
+            </select>
+          </label>
+        </div>
+        <div class="admin-species-actions">
+          <button class="btn btn-success btn-sm">✓ Valider</button>
+        </div>
+      </form>
+      <form method="post" action="{{ url_for('admin_supprimer_espece', key=sp.key) }}"
+            onsubmit="return confirm('Rejeter et supprimer cette proposition ?');" class="admin-inline">
+        <button class="btn-del btn-del-sm">🗑️ Rejeter</button>
+      </form>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-state">Aucune espèce en attente. 👍</p>
+  {% endif %}
+</section>
+
+<section class="admin-block">
+  <h2 class="section-title">✅ Catalogue ({{ validees|length }})</h2>
+  <table class="admin-table">
+    <thead><tr><th>Espèce</th><th>Catégorie</th><th>Signe de plongée</th><th></th></tr></thead>
+    <tbody>
+      {% for sp in validees %}
+      <tr>
+        <td><a href="{{ url_for('espece', key=sp.key) }}">{{ sp.nom }}</a></td>
+        <td>{{ species_emoji(sp.categorie) }} {{ sp.categorie }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin_espece_signal', key=sp.key) }}" class="admin-inline">
+            <select name="signal_key" onchange="this.form.submit()">
+              <option value="">— aucun —</option>
+              {% for s in signals %}{% if s.categorie == 'faune' %}
+              <option value="{{ s.key }}" {{ 'selected' if sp.signal_key == s.key else '' }}>{{ s.emoji }} {{ s.nom }}</option>
+              {% endif %}{% endfor %}
+            </select>
+          </form>
+        </td>
+        <td>
+          {% if sp.source != 'seed' %}
+          <form method="post" action="{{ url_for('admin_supprimer_espece', key=sp.key) }}"
+                onsubmit="return confirm('Supprimer cette espèce ?');" class="admin-inline">
+            <button class="btn-del btn-del-sm">🗑️</button>
+          </form>
+          {% else %}<span class="admin-seed-tag">référence</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

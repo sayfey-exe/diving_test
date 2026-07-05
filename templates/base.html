@@ -17,8 +17,13 @@
         <span class="brand-text"><strong>Palanquée</strong> · la plongée pour tous</span>
       </a>
       <nav class="mainnav">
-        <a href="{{ url_for('apprendre') }}">🎓 Réviser &amp; se tester</a>
+        <a href="{{ url_for('apprendre') }}">🎓 Réviser</a>
         <a href="{{ url_for('spots') }}">🗺️ Spots</a>
+        <a href="{{ url_for('poissons') }}">🐟 Vie sous-marine</a>
+        <a href="{{ url_for('signes') }}">🤿 Signes</a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('carnet') }}">📖 Carnet</a>
+        {% endif %}
         <a href="{{ url_for('classement') }}">🏆 Classement</a>
         {% if user_is_admin %}
         <a class="nav-admin" href="{{ url_for('admin') }}">🛡️ Admin</a>

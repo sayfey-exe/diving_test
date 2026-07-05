@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Mon carnet de plongée — Palanquée{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>📖 Mon carnet de plongée</h1>
+  <p>Consigne tes plongées : profondeur, durée, binôme, conditions et ressenti.
+     Ton historique et tes statistiques, rien qu'à toi.</p>
+</div>
+
+<section class="carnet-stats">
+  <div class="stat-card"><span class="stat-num">{{ stats.nb }}</span><span class="stat-label">plongées</span></div>
+  <div class="stat-card"><span class="stat-num">{{ stats.temps_total_h }} h</span><span class="stat-label">sous l'eau</span></div>
+  <div class="stat-card"><span class="stat-num">{{ stats.prof_max if stats.prof_max is not none else '—' }}{% if stats.prof_max is not none %} m{% endif %}</span><span class="stat-label">profondeur max</span></div>
+  <div class="stat-card"><span class="stat-num">{{ stats.nb_spots }}</span><span class="stat-label">sites plongés</span></div>
+</section>
+
+<details class="carnet-add" {% if not logs or prefill_spot %}open{% endif %}>
+  <summary>➕ Ajouter une plongée</summary>
+  <form method="post" action="{{ url_for('carnet_ajouter') }}" class="carnet-form">
+    <div class="carnet-form-grid">
+      <label>Date<input type="date" name="date"></label>
+      <label>Site (carte)
+        <select name="spot_key">
+          <option value="">— hors carte —</option>
+          {% for s in spots %}
+          <option value="{{ s.key }}" {{ 'selected' if s.key == prefill_spot else '' }}>{{ s.nom }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>…ou nom du site<input type="text" name="spot_nom" maxlength="160" placeholder="Ex : Sec du Tignoso"></label>
+      <label>Profondeur max (m)<input type="number" step="0.1" name="profondeur_max" min="0" max="330"></label>
+      <label>Durée (min)<input type="number" name="duree_min" min="0" max="600"></label>
+      <label>Temp. eau (°C)<input type="number" step="0.1" name="temp_eau" min="-2" max="40"></label>
+      <label>Visibilité<input type="text" name="visibilite" maxlength="40" placeholder="Ex : 15 m"></label>
+      <label>Binôme<input type="text" name="binome" maxlength="120"></label>
+      <label>Lestage<input type="text" name="lestage" maxlength="40" placeholder="Ex : 6 kg"></label>
+      <label>Gaz
+        <select name="gaz">
+          <option value="">—</option>
+          <option>Air</option><option>Nitrox 32</option><option>Nitrox 36</option>
+          <option>Nitrox (autre)</option><option>Trimix</option>
+        </select>
+      </label>
+      <label>Ressenti
+        <select name="ressenti">
+          <option value="">—</option>
+          <option value="5">★★★★★ inoubliable</option>
+          <option value="4">★★★★ super</option>
+          <option value="3">★★★ sympa</option>
+          <option value="2">★★ moyenne</option>
+          <option value="1">★ difficile</option>
+        </select>
+      </label>
+    </div>
+    <label>Notes<textarea name="notes" maxlength="2000" placeholder="Faune observée, matériel, points à retenir…"></textarea></label>
+    <button type="submit" class="btn btn-primary">Enregistrer la plongée</button>
+  </form>
+</details>
+
+<section class="carnet-list">
+  {% if logs %}
+  {% for l in logs %}
+  <article class="dive-entry">
+    <div class="dive-entry-head">
+      <span class="dive-num">#{{ loop.revindex }}</span>
+      <div class="dive-title">
+        <strong>{% if l.spot_key %}<a href="{{ url_for('spot', key=l.spot_key) }}">{{ l.spot_nom or 'Site' }}</a>{% else %}{{ l.spot_nom or 'Plongée' }}{% endif %}</strong>
+        <span class="dive-date">{{ l.date.strftime('%d/%m/%Y') if l.date else l.created_at.strftime('%d/%m/%Y') }}</span>
+      </div>
+      {% if l.ressenti %}<span class="dive-stars">{{ '★' * l.ressenti }}</span>{% endif %}
+      <form method="post" action="{{ url_for('carnet_supprimer', log_id=l.id) }}"
+            onsubmit="return confirm('Supprimer cette plongée ?');" class="admin-inline">
+        <button class="btn-del btn-del-sm">🗑️</button>
+      </form>
+    </div>
+    <div class="dive-facts">
+      {% if l.profondeur_max %}<span>🌊 {{ l.profondeur_max }} m</span>{% endif %}
+      {% if l.duree_min %}<span>⏱️ {{ l.duree_min }} min</span>{% endif %}
+      {% if l.temp_eau is not none %}<span>🌡️ {{ l.temp_eau }} °C</span>{% endif %}
+      {% if l.visibilite %}<span>👁️ {{ l.visibilite }}</span>{% endif %}
+      {% if l.gaz %}<span>🫧 {{ l.gaz }}</span>{% endif %}
+      {% if l.lestage %}<span>⚖️ {{ l.lestage }}</span>{% endif %}
+      {% if l.binome %}<span>👥 {{ l.binome }}</span>{% endif %}
+    </div>
+    {% if l.notes %}<p class="dive-notes">{{ l.notes }}</p>{% endif %}
+  </article>
+  {% endfor %}
+  {% else %}
+  <p class="empty-state">Ton carnet est vide. Ajoute ta première plongée ci-dessus ! 🤿</p>
+  {% endif %}
+</section>
+{% endblock %}

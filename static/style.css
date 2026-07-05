@@ -537,3 +537,96 @@ main.container { flex: 1; padding: 2.2rem 0 3rem; }
   .cb-name { flex-basis: 40%; }
   .mainnav a { padding: 0.4rem 0.6rem; font-size: 0.88rem; }
 }
+
+/* ---------- Sections & notes génériques (réorientation) ---------- */
+.section-title { font-size: 1.35rem; margin: 1.8rem 0 0.8rem; }
+.section-sub { color: var(--ink-soft); margin: 0 0 1rem; }
+.learn-hint, .upload-note { color: var(--ink-soft); font-size: 0.92rem; }
+.upload-note { background: var(--surface-soft); border-radius: 10px; padding: 0.6rem 0.8rem; }
+.admin-note { background: #fff7e6; border: 1px solid #f6dfa8; color: #8a6400; padding: 0.5rem 0.8rem; border-radius: 10px; display: inline-block; font-size: 0.92rem; }
+.feature-card-static { cursor: default; }
+.feature-card-static:hover { transform: none; box-shadow: var(--shadow-sm); }
+.feature-card-static .btn { align-self: flex-start; }
+.learn-cours, .learn-tests { margin-top: 1.6rem; }
+
+/* ---------- Guide de la vie sous-marine ---------- */
+.guide-cat { margin-bottom: 1.6rem; }
+.species-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.species-card { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; text-decoration: none; color: var(--ink); box-shadow: var(--shadow-sm); transition: transform .12s, box-shadow .15s; }
+.species-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); color: var(--ink); }
+.species-thumb, .species-hero-img { position: relative; background: linear-gradient(160deg, #14486f, #0a2f4c); display: flex; align-items: center; justify-content: center; }
+.species-thumb { height: 140px; }
+.species-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.species-noimg { font-size: 3rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25)); }
+.species-noimg-lg { font-size: 5rem; }
+.species-body { padding: 0.7rem 0.9rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.species-body h3 { margin: 0; font-size: 1.05rem; }
+.species-sci { color: var(--ink-soft); font-size: 0.85rem; }
+.species-tags { display: flex; gap: 0.4rem; margin-top: 0.3rem; flex-wrap: wrap; }
+.species-tag { font-size: 0.78rem; font-weight: 700; color: var(--primary-dark); background: var(--surface-soft); padding: 0.1rem 0.5rem; border-radius: 999px; }
+.fish-mini-emoji { font-size: 1.6rem; line-height: 1; }
+
+/* ---------- Fiche espèce ---------- */
+.species-hero { display: grid; grid-template-columns: 260px 1fr; gap: 1.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+.species-hero-img { min-height: 220px; }
+.species-hero-img img { width: 100%; height: 100%; object-fit: cover; }
+.species-hero-body { padding: 1.2rem 1.4rem 1.4rem 0; }
+.species-cat-badge { display: inline-block; font-size: 0.8rem; font-weight: 700; color: var(--primary-dark); background: var(--surface-soft); padding: 0.2rem 0.7rem; border-radius: 999px; }
+.species-hero-body h1 { margin: 0.4rem 0 0.2rem; }
+.species-sci-big { color: var(--ink-soft); margin: 0 0 0.6rem; }
+.species-facts { display: flex; gap: 1.6rem; flex-wrap: wrap; margin: 0.8rem 0 0; }
+.species-facts dt { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.species-facts dd { margin: 0.1rem 0 0; font-weight: 700; }
+.species-section { margin-top: 1.6rem; }
+.species-signal .signal-card { max-width: 560px; }
+
+/* ---------- Signes de plongée ---------- */
+.signes-cat { margin-bottom: 1.6rem; }
+.signal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.9rem; }
+.signal-card { display: flex; gap: 0.9rem; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; box-shadow: var(--shadow-sm); }
+.signal-card-lg { padding: 1.1rem 1.2rem; }
+.signal-emoji { font-size: 2rem; line-height: 1; flex: 0 0 auto; }
+.signal-card strong { display: block; margin-bottom: 0.2rem; }
+.signal-card p { margin: 0; color: var(--ink-soft); font-size: 0.92rem; }
+
+/* ---------- Carnet de plongée ---------- */
+.carnet-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.4rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.1rem; text-align: center; }
+.carnet-add { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 0.4rem 1.2rem; margin-bottom: 1.6rem; }
+.carnet-add summary { cursor: pointer; font-weight: 800; padding: 0.7rem 0; color: var(--primary-dark); }
+.carnet-form { display: grid; gap: 1rem; padding: 0.6rem 0 1rem; }
+.carnet-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.9rem; }
+.carnet-form label { display: grid; gap: 0.3rem; font-weight: 700; font-size: 0.9rem; }
+.carnet-form input, .carnet-form select, .carnet-form textarea { padding: 0.55rem 0.7rem; border: 2px solid var(--border); border-radius: 10px; font: inherit; background: #fff; }
+.carnet-form input:focus, .carnet-form select:focus, .carnet-form textarea:focus { outline: none; border-color: var(--primary); }
+.carnet-form textarea { min-height: 70px; resize: vertical; }
+.carnet-list { display: grid; gap: 1rem; }
+.dive-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 1rem 1.2rem; }
+.dive-entry-head { display: flex; align-items: center; gap: 0.8rem; }
+.dive-num { font-weight: 800; color: #fff; background: var(--primary); border-radius: 8px; padding: 0.15rem 0.5rem; font-size: 0.85rem; }
+.dive-title { flex: 1; display: flex; flex-direction: column; }
+.dive-title strong a { color: var(--ink); text-decoration: none; }
+.dive-date { font-size: 0.82rem; color: var(--ink-soft); }
+.dive-stars { color: var(--warn); letter-spacing: 0.1em; }
+.dive-facts { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.7rem; color: var(--ink-soft); font-size: 0.9rem; }
+.dive-notes { margin: 0.7rem 0 0; padding-top: 0.6rem; border-top: 1px dashed var(--border); font-size: 0.94rem; }
+
+/* ---------- Admin : espèces ---------- */
+.admin-block { margin-bottom: 2rem; }
+.admin-species-list { display: grid; gap: 1rem; }
+.admin-species-card { display: grid; grid-template-columns: 120px 1fr auto; gap: 1rem; align-items: start; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 1rem; }
+.admin-species-thumb { height: 100px; border-radius: 10px; overflow: hidden; background: linear-gradient(160deg, #14486f, #0a2f4c); display: flex; align-items: center; justify-content: center; }
+.admin-species-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.admin-species-form h3 { margin: 0 0 0.2rem; }
+.admin-species-meta { color: var(--ink-soft); font-size: 0.85rem; margin: 0 0 0.6rem; }
+.admin-species-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
+.admin-species-fields label { display: grid; gap: 0.2rem; font-size: 0.82rem; font-weight: 700; }
+.admin-species-fields input, .admin-species-fields select { padding: 0.4rem 0.5rem; border: 2px solid var(--border); border-radius: 8px; font: inherit; }
+.admin-species-actions { margin-top: 0.7rem; }
+.admin-seed-tag { font-size: 0.78rem; color: var(--ink-soft); }
+
+@media (max-width: 700px) {
+  .species-hero { grid-template-columns: 1fr; }
+  .species-hero-body { padding: 0 1.2rem 1.2rem; }
+  .admin-species-card { grid-template-columns: 1fr; }
+}

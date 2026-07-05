@@ -33,10 +33,12 @@ from data.content import CHAPITRES, HINTS, PASCAL
 from data.questions import QUESTION_BANK, QUESTION_BY_ID
 from data.exercices import EXERCICES, NOTE_TABLES
 from data.spots import SPOTS, FISH
+from data.signals import SIGNALS, SIGNAL_BY_KEY
 from models import (
     db, User, TestResult, ChapterStudy, QuestionComment,
-    Spot, SpotComment, SpotPhoto,
+    Spot, SpotComment, SpotPhoto, Species, DiveLog,
 )
+import recognition
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -165,9 +167,49 @@ def _seed_spots():
         db.session.commit()
 
 
+def _seed_species():
+    """Insère les espèces de référence dans le catalogue si vide."""
+    if Species.query.count() == 0:
+        for key, f in FISH.items():
+            db.session.add(Species(
+                key=key, nom=f["nom"], nom_scientifique=f.get("nom_scientifique"),
+                categorie=f.get("categorie", "poisson"), description=f["desc"],
+                habitat=f.get("habitat"), taille=f.get("taille"),
+                image=f.get("image"), signal_key=f.get("signal"),
+                validated=True, source="seed",
+            ))
+        db.session.commit()
+
+
+CATEGORY_EMOJI = {
+    "poisson": "🐟", "invertébré": "🦀", "mollusque": "🐙", "crustacé": "🦞",
+    "végétal": "🌿", "reptile": "🐢", "mammifère": "🐬", "autre": "🌊",
+}
+
+
+def species_map(validated_only=True):
+    """Dictionnaire {clé: Species} pour les templates (remplace l'ancien FISH)."""
+    q = Species.query
+    if validated_only:
+        q = q.filter_by(validated=True)
+    return {s.key: s for s in q.order_by(Species.nom.asc()).all()}
+
+
+def species_photo_url(sp):
+    """URL d'illustration d'une espèce : image de référence, sinon photo taguée."""
+    img = getattr(sp, "image", None)
+    if img:
+        return url_for("static", filename="img/" + img)
+    pid = getattr(sp, "photo_id", None)
+    if pid:
+        return url_for("spot_photo", photo_id=pid)
+    return ""
+
+
 with app.app_context():
     db.create_all()
     _seed_spots()
+    _seed_species()
 
 
 # ---------------------------------------------------------------------------
@@ -258,7 +300,7 @@ def spots():
         for s in all_spots
     ]
     return render_template("spots.html", spots=all_spots, spots_json=spots_json,
-                           counts=counts, fish=FISH)
+                           counts=counts, fish=species_map())
 
 
 @app.route("/spots/<key>")
@@ -266,13 +308,14 @@ def spot(key):
     s = Spot.query.filter_by(key=key).first()
     if not s:
         abort(404)
-    poissons = [dict(key=k, **FISH[k]) for k in s.fish_keys if k in FISH]
+    smap = species_map()
+    poissons = [smap[k] for k in s.fish_keys if k in smap]
     photos = (SpotPhoto.query.filter_by(spot_id=key)
               .order_by(SpotPhoto.created_at.desc()).all())
     comments = (SpotComment.query.filter_by(spot_key=key)
                 .order_by(SpotComment.created_at.asc()).all())
     return render_template("spot.html", spot=s, poissons=poissons, photos=photos,
-                           comments=comments, fish=FISH)
+                           comments=comments, fish=smap)
 
 
 @app.route("/spots/add", methods=["POST"])
@@ -288,7 +331,8 @@ def spot_add():
         flash("Donne un nom et clique sur la carte pour placer ton spot.", "error")
         return redirect(url_for("spots"))
 
-    poissons = [k for k in request.form.getlist("poissons") if k in FISH]
+    valid_keys = set(species_map().keys())
+    poissons = [k for k in request.form.getlist("poissons") if k in valid_keys]
     key = base = _slugify(nom)
     i = 2
     while Spot.query.filter_by(key=key).first():
@@ -344,19 +388,92 @@ def spot_photo_upload(key):
         flash("Fichier image invalide (formats acceptés : JPEG, PNG…).", "error")
         return redirect(url_for("spot", key=key))
 
+    smap = species_map()
     fish_key = request.form.get("fish_key") or None
-    if fish_key not in FISH:
+    if fish_key not in smap:
         fish_key = None
+    proposed = (request.form.get("nouvelle_espece") or "").strip()[:120]
     caption = (request.form.get("caption") or "").strip()[:300]
 
-    db.session.add(SpotPhoto(
+    photo = SpotPhoto(
         spot_id=key, fish_key=fish_key, caption=caption,
         mimetype="image/jpeg", data=data,
         user_id=current_user.id, pseudo=current_user.pseudo,
-    ))
-    db.session.commit()
-    flash("Merci ! Ta photo a été ajoutée à la banque du spot. 🐟", "success")
+    )
+    db.session.add(photo)
+    db.session.commit()  # commit pour disposer de photo.id (illustration d'espèce)
+
+    msg = "Merci ! Ta photo a été ajoutée à la banque du spot. 🐟"
+
+    if not fish_key:
+        # 1) L'utilisateur propose lui-même une nouvelle espèce.
+        if proposed:
+            sp = _register_species(proposed, photo, source="communauté")
+            photo.fish_key = sp.key
+            db.session.commit()
+            msg += (" Ton espèce « %s » a été proposée et sera visible après "
+                    "validation." % sp.nom)
+        else:
+            # 2) Reconnaissance automatique (si un backend est configuré).
+            suggestion = recognition.identify(
+                data, "image/jpeg", known=[s.nom for s in smap.values()])
+            if suggestion and suggestion["confiance"] >= recognition.min_confidence():
+                match = _match_species(suggestion["nom"], smap)
+                if match:
+                    photo.fish_key = match.key
+                    db.session.commit()
+                    msg += (" 🤖 Reconnaissance : %s (confiance %.0f%%) — "
+                            "photo classée automatiquement."
+                            % (match.nom, 100 * suggestion["confiance"]))
+                else:
+                    sp = _register_species(
+                        suggestion["nom"], photo, source="reconnaissance",
+                        nom_scientifique=suggestion.get("nom_scientifique"),
+                        categorie=suggestion.get("categorie"),
+                        confidence=suggestion["confiance"],
+                    )
+                    photo.fish_key = sp.key
+                    db.session.commit()
+                    msg += (" 🤖 Reconnaissance : %s (confiance %.0f%%) — nouvelle "
+                            "espèce proposée, en attente de validation."
+                            % (sp.nom, 100 * suggestion["confiance"]))
+
+    flash(msg, "success")
     return redirect(url_for("spot", key=key))
+
+
+def _match_species(nom, smap):
+    """Rapproche un nom proposé d'une espèce existante (comparaison souple)."""
+    cible = _slugify(nom)
+    for sp in smap.values():
+        if _slugify(sp.nom) == cible or (
+                sp.nom_scientifique and _slugify(sp.nom_scientifique) == cible):
+            return sp
+    return None
+
+
+def _register_species(nom, photo, source, nom_scientifique=None,
+                      categorie=None, confidence=None):
+    """Crée (ou retrouve) une espèce proposée, en attente de validation."""
+    base = _slugify(nom)
+    existing = Species.query.filter_by(key=base).first()
+    if existing:
+        return existing
+    key = base
+    i = 2
+    while Species.query.filter_by(key=key).first():
+        key = "%s-%d" % (base, i)
+        i += 1
+    sp = Species(
+        key=key, nom=nom[:120], nom_scientifique=nom_scientifique,
+        categorie=(categorie or "autre")[:40], photo_id=photo.id,
+        validated=False, source=source, confidence=confidence,
+        created_by=current_user.id if current_user.is_authenticated else None,
+        pseudo=current_user.pseudo if current_user.is_authenticated else None,
+    )
+    db.session.add(sp)
+    db.session.commit()
+    return sp
 
 
 @app.route("/spot-photo/<int:photo_id>")
@@ -368,15 +485,60 @@ def spot_photo(photo_id):
                     headers={"Cache-Control": "public, max-age=86400"})
 
 
-@app.route("/poissons")
-def poissons():
-    """Catalogue des poissons enrichi par les photos taguées de la communauté."""
+def _photos_by_species():
     photos = (SpotPhoto.query.filter(SpotPhoto.fish_key.isnot(None))
               .order_by(SpotPhoto.created_at.desc()).all())
     by_fish = {}
     for p in photos:
         by_fish.setdefault(p.fish_key, []).append(p)
-    return render_template("poissons.html", fish=FISH, by_fish=by_fish)
+    return by_fish
+
+
+@app.route("/poissons")
+@app.route("/vie-sous-marine")
+def poissons():
+    """Guide de la vie sous-marine, enrichi par les photos taguées et la
+    reconnaissance automatique. Regroupé par catégorie."""
+    species = (Species.query.filter_by(validated=True)
+               .order_by(Species.categorie.asc(), Species.nom.asc()).all())
+    by_fish = _photos_by_species()
+    par_categorie = {}
+    for sp in species:
+        par_categorie.setdefault(sp.categorie or "autre", []).append(sp)
+    nb_attente = Species.query.filter_by(validated=False).count() if is_admin() else 0
+    return render_template(
+        "poissons.html", par_categorie=par_categorie, by_fish=by_fish,
+        nb_especes=len(species), nb_attente=nb_attente,
+    )
+
+
+@app.route("/signes")
+def signes():
+    """Mémo des signes de plongée, regroupés par catégorie."""
+    ordre = ["communication", "securite", "faune"]
+    titres = {
+        "communication": "💬 Communication de base",
+        "securite": "🚨 Sécurité & détresse",
+        "faune": "🐟 Faune (indicatifs)",
+    }
+    par_cat = {c: [] for c in ordre}
+    for s in SIGNALS:
+        par_cat.setdefault(s["categorie"], []).append(s)
+    return render_template("signes.html", par_cat=par_cat, ordre=ordre, titres=titres)
+
+
+@app.route("/espece/<key>")
+def espece(key):
+    sp = Species.query.filter_by(key=key).first()
+    if not sp or (not sp.validated and not is_admin()):
+        abort(404)
+    photos = (SpotPhoto.query.filter_by(fish_key=key)
+              .order_by(SpotPhoto.created_at.desc()).all())
+    signal = SIGNAL_BY_KEY.get(sp.signal_key) if sp.signal_key else None
+    # Spots où l'espèce est renseignée.
+    spots_ici = [s for s in Spot.query.all() if key in s.fish_keys]
+    return render_template("espece.html", sp=sp, photos=photos, signal=signal,
+                           spots_ici=spots_ici)
 
 
 # --- Modération (admins uniquement) ---
@@ -420,6 +582,61 @@ def admin_delete_spot(key):
     else:
         flash("Ce spot pré-défini ne peut pas être supprimé.", "error")
     return redirect(url_for("spots"))
+
+
+@app.route("/admin/especes")
+@admin_required
+def admin_especes():
+    en_attente = (Species.query.filter_by(validated=False)
+                  .order_by(Species.created_at.desc()).all())
+    validees = (Species.query.filter_by(validated=True)
+                .order_by(Species.nom.asc()).all())
+    return render_template("admin_especes.html", en_attente=en_attente,
+                           validees=validees, signals=SIGNALS)
+
+
+@app.route("/admin/espece/<key>/valider", methods=["POST"])
+@admin_required
+def admin_valider_espece(key):
+    sp = Species.query.filter_by(key=key).first()
+    if sp:
+        sp.validated = True
+        # Champs éventuellement complétés par l'admin lors de la validation.
+        for champ in ("categorie", "habitat", "taille", "nom_scientifique"):
+            val = (request.form.get(champ) or "").strip()
+            if val:
+                setattr(sp, champ, val[:200])
+        signal_key = request.form.get("signal_key") or None
+        if signal_key in SIGNAL_BY_KEY:
+            sp.signal_key = signal_key
+        db.session.commit()
+        flash("Espèce « %s » validée et ajoutée au guide." % sp.nom, "success")
+    return redirect(url_for("admin_especes"))
+
+
+@app.route("/admin/espece/<key>/signal", methods=["POST"])
+@admin_required
+def admin_espece_signal(key):
+    sp = Species.query.filter_by(key=key).first()
+    if sp:
+        signal_key = request.form.get("signal_key") or None
+        sp.signal_key = signal_key if signal_key in SIGNAL_BY_KEY else None
+        db.session.commit()
+        flash("Signe de plongée mis à jour pour « %s ». " % sp.nom, "success")
+    return redirect(url_for("admin_especes"))
+
+
+@app.route("/admin/espece/<key>/supprimer", methods=["POST"])
+@admin_required
+def admin_supprimer_espece(key):
+    sp = Species.query.filter_by(key=key).first()
+    if sp and sp.source != "seed":
+        db.session.delete(sp)
+        db.session.commit()
+        flash("Espèce supprimée.", "success")
+    else:
+        flash("Les espèces de référence ne peuvent pas être supprimées.", "error")
+    return redirect(url_for("admin_especes"))
 
 
 @app.route("/admin/question-comment/<int:cid>/delete", methods=["POST"])
@@ -611,6 +828,90 @@ def profil():
     )
 
 
+def _num(val, cast):
+    try:
+        v = (val or "").strip()
+        return cast(v) if v != "" else None
+    except (TypeError, ValueError):
+        return None
+
+
+@app.route("/carnet")
+@login_required
+def carnet():
+    """Carnet de plongée personnel : liste des plongées et statistiques."""
+    logs = (DiveLog.query.filter_by(user_id=current_user.id)
+            .order_by(DiveLog.date.desc(), DiveLog.id.desc()).all())
+    total_min = sum(l.duree_min or 0 for l in logs)
+    profs = [l.profondeur_max for l in logs if l.profondeur_max]
+    spots_visites = {(l.spot_key or l.spot_nom) for l in logs if (l.spot_key or l.spot_nom)}
+    stats = {
+        "nb": len(logs),
+        "temps_total_h": round(total_min / 60, 1) if total_min else 0,
+        "prof_max": max(profs) if profs else None,
+        "prof_moy": round(sum(profs) / len(profs), 1) if profs else None,
+        "nb_spots": len(spots_visites),
+    }
+    spots = Spot.query.order_by(Spot.nom.asc()).all()
+    prefill = request.args.get("spot") or ""
+    return render_template("carnet.html", logs=logs, stats=stats, spots=spots,
+                           prefill_spot=prefill)
+
+
+@app.route("/carnet/ajouter", methods=["POST"])
+@login_required
+def carnet_ajouter():
+    from datetime import datetime
+    d = None
+    raw_date = (request.form.get("date") or "").strip()
+    if raw_date:
+        try:
+            d = datetime.strptime(raw_date, "%Y-%m-%d").date()
+        except ValueError:
+            d = None
+
+    spot_key = (request.form.get("spot_key") or "").strip() or None
+    spot_nom = (request.form.get("spot_nom") or "").strip()[:160]
+    if spot_key:
+        s = Spot.query.filter_by(key=spot_key).first()
+        if s and not spot_nom:
+            spot_nom = s.nom
+        if not s:
+            spot_key = None
+
+    ressenti = _num(request.form.get("ressenti"), int)
+    if ressenti is not None:
+        ressenti = max(1, min(5, ressenti))
+
+    log = DiveLog(
+        user_id=current_user.id, date=d, spot_key=spot_key, spot_nom=spot_nom or None,
+        profondeur_max=_num(request.form.get("profondeur_max"), float),
+        duree_min=_num(request.form.get("duree_min"), int),
+        temp_eau=_num(request.form.get("temp_eau"), float),
+        visibilite=(request.form.get("visibilite") or "").strip()[:40] or None,
+        binome=(request.form.get("binome") or "").strip()[:120] or None,
+        lestage=(request.form.get("lestage") or "").strip()[:40] or None,
+        gaz=(request.form.get("gaz") or "").strip()[:40] or None,
+        ressenti=ressenti,
+        notes=(request.form.get("notes") or "").strip()[:2000] or None,
+    )
+    db.session.add(log)
+    db.session.commit()
+    flash("Plongée ajoutée à ton carnet. 🤿", "success")
+    return redirect(url_for("carnet"))
+
+
+@app.route("/carnet/<int:log_id>/supprimer", methods=["POST"])
+@login_required
+def carnet_supprimer(log_id):
+    log = db.session.get(DiveLog, log_id)
+    if log and log.user_id == current_user.id:
+        db.session.delete(log)
+        db.session.commit()
+        flash("Plongée supprimée du carnet.", "success")
+    return redirect(url_for("carnet"))
+
+
 @app.route("/classement")
 def classement():
     """Classement de la communauté par note moyenne (compétition)."""
@@ -644,7 +945,9 @@ def admin():
         "global_avg": global_avg,
     }
     nb_comment = QuestionComment.query.count()
-    return render_template("admin.html", rows=rows, totaux=totaux, nb_comment=nb_comment)
+    nb_especes_attente = Species.query.filter_by(validated=False).count()
+    return render_template("admin.html", rows=rows, totaux=totaux,
+                           nb_comment=nb_comment, nb_especes_attente=nb_especes_attente)
 
 
 @app.route("/admin/commentaires")
@@ -928,7 +1231,13 @@ def commentaire_question(qid):
 
 @app.context_processor
 def inject_globals():
-    return {"chapitres_nav": CHAPITRES, "user_is_admin": is_admin()}
+    return {
+        "chapitres_nav": CHAPITRES,
+        "user_is_admin": is_admin(),
+        "species_photo_url": species_photo_url,
+        "species_emoji": lambda cat: CATEGORY_EMOJI.get(cat, "🌊"),
+        "signal_by_key": SIGNAL_BY_KEY,
+    }
 
 
 @app.errorhandler(404)

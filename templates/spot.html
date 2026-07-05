@@ -15,6 +15,9 @@
       {% if spot.user_created %}· ajouté par {{ spot.pseudo or 'un plongeur' }}{% endif %}
     </p>
     {% if spot.description %}<p>{{ spot.description }}</p>{% endif %}
+    {% if current_user.is_authenticated %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('carnet', spot=spot.key) }}">📖 Ajouter au carnet</a>
+    {% endif %}
     {% if user_is_admin and spot.user_created %}
     <form method="post" action="{{ url_for('admin_delete_spot', key=spot.key) }}"
           onsubmit="return confirm('Supprimer ce spot et toutes ses photos/commentaires ?');" class="admin-inline">
@@ -28,13 +31,15 @@
     {% if poissons %}
     <div class="fish-grid">
       {% for f in poissons %}
-      <figure class="fish-card">
-        <img src="{{ url_for('static', filename='img/' ~ f.image) }}" alt="{{ f.nom }}" loading="lazy">
+      {% set url = species_photo_url(f) %}
+      <a class="fish-card" href="{{ url_for('espece', key=f.key) }}">
+        {% if url %}<img src="{{ url }}" alt="{{ f.nom }}" loading="lazy">
+        {% else %}<span class="species-noimg">{{ species_emoji(f.categorie) }}</span>{% endif %}
         <figcaption>
           <strong>{{ f.nom }}</strong>
           <span>{{ f.desc }}</span>
         </figcaption>
-      </figure>
+      </a>
       {% endfor %}
     </div>
     {% else %}
@@ -76,7 +81,7 @@
       <label>Ta photo (JPEG, PNG…)
         <input type="file" name="photo" accept="image/*" required>
       </label>
-      <label>Espèce (pour enrichir la base des poissons)
+      <label>Espèce (pour enrichir le guide)
         <select name="fish_key">
           <option value="">— Choisir une espèce —</option>
           {% for k, f in fish.items() %}
@@ -84,9 +89,16 @@
           {% endfor %}
         </select>
       </label>
+      <label>…ou propose une nouvelle espèce
+        <input type="text" name="nouvelle_espece" maxlength="120"
+               placeholder="Ex : Rascasse rouge (sera validée par un admin)">
+      </label>
       <label>Légende (optionnel)
         <input type="text" name="caption" maxlength="300" placeholder="Ex : croisé à 18 m près du tombant">
       </label>
+      <p class="upload-note">🤖 Si tu ne renseignes rien, une reconnaissance automatique
+        peut proposer l'espèce (quand elle est activée). Une nouvelle espèce reste
+        en attente de validation avant d'apparaître dans le guide.</p>
       <button type="submit" class="btn btn-primary">Envoyer ma photo</button>
     </form>
     {% else %}

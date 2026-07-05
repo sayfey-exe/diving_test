@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Signes de plongée — Palanquée{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>🤿 Mémo des signes de plongée</h1>
+  <p>Les signes de <strong>communication</strong> et de <strong>sécurité</strong> sont
+     standardisés (FFESSM / CMAS) : à connaître par cœur, quel que soit ton niveau.
+     Les signes de <strong>faune</strong> sont indicatifs et varient selon les clubs.</p>
+</div>
+
+{% for cat in ordre %}
+{% if par_cat.get(cat) %}
+<section class="signes-cat">
+  <h2 class="section-title">{{ titres[cat] }}</h2>
+  <div class="signal-grid">
+    {% for s in par_cat[cat] %}
+    <div class="signal-card">
+      <span class="signal-emoji">{{ s.emoji }}</span>
+      <div>
+        <strong>{{ s.nom }}</strong>
+        <p>{{ s.description }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endfor %}
+
+<p class="section-sub">🐟 Certains signes de faune sont rattachés aux espèces du
+   <a href="{{ url_for('poissons') }}">guide de la vie sous-marine</a>.</p>
+{% endblock %}

@@ -11,10 +11,14 @@ théorie et les quiz (entraînement corrigé ou mode examen chronométré).
 
 ## Fonctionnalités
 
-- **📚 Fiches de cours** — les 15 chapitres du programme résumés, avec
+L'onglet **« 🎓 Réviser »** regroupe la théorie et les quiz. Les autres onglets
+(**Spots**, **Vie sous-marine**, **Signes**, **Carnet**) sont des outils utiles
+à **tous les plongeurs**, quel que soit leur niveau.
+
+- **📚 Fiches de théorie** — les 15 chapitres du programme résumés, avec
   *l'essentiel à retenir* et **3 questions d'auto-évaluation** (correction
   immédiate) à la fin de chaque fiche.
-- **📝 Test blanc** — 40 QCM **tirés au sort sans doublon** dans une banque de
+- **📝 Quiz d'entraînement** — 40 QCM **tirés au sort sans doublon** dans une banque de
   **plus de 400 questions** d'un **niveau un peu plus exigeant que l'examen**
   (calculs multi-étapes, pièges classiques, mises en situation, distracteurs
   subtils), avec un **tirage équilibré par thème** (chaque test couvre les 15
@@ -23,8 +27,8 @@ théorie et les quiz (entraînement corrigé ou mode examen chronométré).
   Sous chaque question corrigée, une **zone de commentaire** permet de signaler
   une remarque ; ces retours sont enregistrés et consultables côté admin pour
   améliorer la banque.
-- **⏱️ Test examen** — 40 QCM **chronométrés** (40 min), sans correction
-  pendant l'épreuve ; score et bilan par chapitre à la fin.
+- **⏱️ Mode examen** — 40 QCM **chronométrés** (40 min), sans correction
+  pendant l'épreuve ; score et bilan par thème à la fin.
 - **🐟 Conseils de Pascal le Mérou** — la mascotte distille ses astuces (méthode,
   pièges classiques, calculs) cachées derrière des **icônes ampoule 💡** dans
   les fiches de cours.
@@ -40,12 +44,28 @@ théorie et les quiz (entraînement corrigé ou mode examen chronométré).
   photos communautaire** (upload redimensionné, stocké en base) et des
   **commentaires**. Les utilisateurs connectés peuvent **ajouter un spot en
   cliquant sur la carte**, et chaque photo taguée par espèce **enrichit le
-  catalogue des poissons** (`/poissons`). Les **administrateurs** peuvent
+  guide de la vie sous-marine**. Les **administrateurs** peuvent
   supprimer photos, commentaires et spots proposés par la communauté.
+- **🐟 Guide de la vie sous-marine** (`/vie-sous-marine`) — un **catalogue
+  d'espèces** (regroupé par catégorie : poissons, invertébrés, mollusques,
+  végétaux…), avec fiche détaillée (habitat, taille, nom scientifique), le
+  **signe de plongée** associé quand il existe, et la galerie des photos de la
+  communauté. Le catalogue **s'enrichit tout seul** : chaque photo peut être
+  taguée à une espèce, un plongeur peut **proposer une nouvelle espèce**, et une
+  **reconnaissance automatique** (optionnelle, voir plus bas) peut identifier
+  l'espèce sur la photo. Toute **nouvelle espèce** reste *en attente de
+  validation* par un administrateur avant d'apparaître publiquement.
+- **🤿 Mémo des signes de plongée** (`/signes`) — aide-mémoire des signes de
+  **communication**, de **sécurité/détresse** et de **faune** (indicatifs).
+- **📖 Carnet de plongée** (`/carnet`) — journal personnel des plongées (date,
+  site — relié à la carte des spots —, profondeur, durée, température, binôme,
+  lestage, gaz, ressenti, notes) avec **statistiques** (nombre de plongées,
+  temps cumulé, profondeur max, sites visités).
 - **🏆 Classement** — comparaison à la **moyenne de la communauté** et classement
   des joueurs par note moyenne (esprit de compétition).
-- **🛡️ Mode administrateur** — vue de tous les comptes et de leurs scores
-  (réservé aux e-mails déclarés administrateurs).
+- **🛡️ Mode administrateur** — vue de tous les comptes et de leurs scores, et
+  **modération** (remarques, photos, spots, commentaires, **validation des
+  espèces** proposées et attribution des signes de plongée).
 
 ## Programme couvert
 
@@ -119,6 +139,26 @@ Pour **quitter** l'environnement virtuel : `deactivate`.
 | `SECRET_KEY` | Clé de session Flask (à définir en prod)| valeur de dev |
 
 Exemple pour changer le port :
+
+#### Reconnaissance automatique des espèces (optionnelle)
+
+La reconnaissance des espèces sur les photos est **désactivée par défaut** :
+sans configuration, l'utilisateur choisit ou propose l'espèce à la main, et
+un administrateur valide les nouvelles propositions.
+
+Pour l'activer, on branche l'API vision de Claude via ces variables :
+
+| Variable                | Rôle                                              | Défaut |
+|-------------------------|---------------------------------------------------|--------|
+| `ANTHROPIC_API_KEY`     | Clé API (active la reconnaissance)                | *(vide)* |
+| `VISION_ENABLED`        | `0` pour désactiver même si une clé est présente  | `1` |
+| `VISION_MODEL`          | Modèle vision utilisé                             | `claude-3-5-sonnet-latest` |
+| `VISION_MIN_CONFIDENCE` | Seuil de confiance (0–1) pour accepter une propal | `0.55` |
+
+Le résultat n'est **jamais** publié sans contrôle : une espèce reconnue mais
+absente du catalogue est créée *en attente de validation* (l'admin la valide
+depuis **🛡️ Admin → Espèces**), et l'utilisateur peut toujours corriger. Sans
+clé, `recognition.identify()` renvoie simplement `None`.
 
 ```bash
 # Linux / macOS
